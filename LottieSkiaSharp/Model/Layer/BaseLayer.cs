@@ -38,7 +38,7 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        private readonly Path _path = new Path();
+        private SKPath _path = new SKPath();
         internal Matrix3X3 Matrix = Matrix3X3.CreateIdentity();
         private readonly SKPaint _contentPaint = SkRectExpansion.CreateSkPaint();
         private readonly SKPaint _addMaskPaint = SkRectExpansion.CreateSkPaint();
@@ -263,8 +263,8 @@ namespace LottieUWP.Model.Layer
                 var mask = _mask.Masks[i];
                 var maskAnimation = _mask.MaskAnimations[i];
                 var maskPath = maskAnimation.Value;
-                _path.Set(maskPath);
-                _path.Transform(matrix);
+                _path=(maskPath);
+                _path.Transform(matrix.ToSKMatrix());
 
                 switch (mask.GetMaskMode())
                 {
@@ -277,7 +277,7 @@ namespace LottieUWP.Model.Layer
                         return;
                     case Mask.MaskMode.MaskModeAdd:
                     default:
-                        _path.ComputeBounds(out _tempMaskBoundsRect);
+                        _path.GetBounds(out _tempMaskBoundsRect);
                         // As we iterate through the masks, we want to calculate the union region of the masks.
                         // We initialize the rect with the first mask. If we don't call set() on the first call,
                         // the rect will always extend to (0,0).
@@ -371,12 +371,12 @@ namespace LottieUWP.Model.Layer
                 }
                 var maskAnimation = _mask.MaskAnimations[i];
                 var maskPath = maskAnimation.Value;
-                _path.Set(maskPath);
-                _path.Transform(matrix);
+                _path=(maskPath);
+                _path.Transform(matrix.ToSKMatrix());
                 var opacityAnimation = _mask.OpacityAnimations[i];
                 var alpha = _contentPaint.Color.Alpha;
                 _contentPaint.SetAlpha( (byte)(opacityAnimation.Value.Value * 2.55f));
-                canvas.DrawPath(_path.GetGeometry(), _contentPaint);
+                canvas.DrawPath(_path, _contentPaint);
                 _contentPaint.SetAlpha(alpha);
             }
             LottieLog.BeginSection("Layer.RestoreLayer");

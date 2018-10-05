@@ -11,7 +11,7 @@ namespace LottieUWP.Model.Layer
     {
         private readonly SKPaint _paint = SkRectExpansion.CreateSkPaintWithoutAntialias();
         private Vector2[] _points = new Vector2[4];
-        private readonly Path _path = new Path();
+        private readonly SKPath _path = new SKPath();
         private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
 
         internal SolidLayer(ILottieDrawable lottieDrawable, Layer layerModel) : base(lottieDrawable, layerModel)
@@ -54,7 +54,7 @@ namespace LottieUWP.Model.Layer
                 _path.LineTo(_points[3].X, _points[3].Y);
                 _path.LineTo(_points[0].X, _points[0].Y);
                 _path.Close();
-                canvas.DrawPath(_path.GetGeometry(), _paint);
+                canvas.DrawPath(_path, _paint);
             }
         }
 

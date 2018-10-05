@@ -77,7 +77,7 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        public override void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             LottieLog.BeginSection("CompositionLayer.Draw");
             canvas.Save();
@@ -89,7 +89,9 @@ namespace LottieUWP.Model.Layer
                 var nonEmptyClip = true;
                 if (!_newClipRect.IsEmpty)
                 {
-                    nonEmptyClip = canvas.ClipRect(_newClipRect);
+                    canvas.ClipRect(_newClipRect);
+                    //nonEmptyClip = canvas.ClipRect(_newClipRect);
+                    //TODO
                 }
                 if (nonEmptyClip)
                 {
@@ -101,7 +103,7 @@ namespace LottieUWP.Model.Layer
             LottieLog.EndSection("CompositionLayer.Draw");
         }
 
-        public override void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public override void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             base.GetBounds(out outBounds, parentMatrix);
             RectExt.Set(ref Rect, 0, 0, 0, 0);

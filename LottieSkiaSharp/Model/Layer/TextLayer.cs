@@ -176,7 +176,7 @@ namespace LottieUWP.Model.Layer
                 Matrix.Set(parentMatrix);
                 Matrix = MatrixExt.PreTranslate(Matrix, 0, (float)-documentData.BaselineShift * Utils.Utils.DpScale());
                 Matrix = MatrixExt.PreScale(Matrix, fontScale, fontScale);
-                path.Transform(Matrix);
+                path.Transform(Matrix.ToSKMatrix());
                 if (documentData.StrokeOverFill)
                 {
                     DrawGlyph(path, _fillPaint, canvas);
@@ -190,7 +190,7 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        private void DrawGlyph(Path path, SKPaint paint, SKCanvas canvas)
+        private void DrawGlyph(SKPath path, SKPaint paint, SKCanvas canvas)
         {
             if (paint.Color == SKColors.Transparent)
             {
@@ -200,7 +200,7 @@ namespace LottieUWP.Model.Layer
             {
                 return;
             }
-            canvas.DrawPath(path.GetGeometry(), paint);
+            canvas.DrawPath(path, paint);
         }
 
         private SKRect? DrawCharacterFromFont(char c, DocumentData documentData, SKCanvas canvas)
