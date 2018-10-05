@@ -1,13 +1,11 @@
-# LottieUWP
+# LottieSkiaSharp
 Lottie is a mobile library for Android and iOS that parses [Adobe After Effects](http://www.adobe.com/products/aftereffects.html) animations exported as json with [Bodymovin](https://github.com/bodymovin/bodymovin) and renders them natively on mobile!
 
-**This library is a port from the Java code to support the Universal Windows Platform (UWP).**
+**This library is a port from the Java code to support the all platform that SkiaSharp support.**
 
 ## Download
 
-UWP: [![NuGet Badge](https://chohfi.visualstudio.com/_apis/public/build/definitions/be40ef7f-40f7-491c-8bca-b3c52c625319/14/badge)](https://www.nuget.org/packages/LottieUWP/)
 
-MyGet: [https://www.myget.org/F/azchohfi/api/v3/index.json](https://www.myget.org/F/azchohfi/api/v3/index.json)
 
 For the first time, designers can create **and ship** beautiful animations without an engineer painstakingly recreating it by hand. They say a picture is worth 1,000 words so here are 13,000:
 
@@ -32,40 +30,7 @@ All of these animations were created in After Effects, exported with Bodymovin, 
 Read more about it on our [blog post](http://airbnb.design/introducing-lottie/)
 Or get in touch on Twitter ([gpeal8](https://twitter.com/gpeal8)) or via lottie@airbnb.com
 
-## Sample App
 
-The sample app includes some built in animations.
-
-## Using Lottie for UWP
-LottieUWP supports Windows Build 10586+ (November Update) and above.
-The simplest way to use it is with LottieAnimationView:
-
-```xaml
-<Page 
-    ...
-    xmlns:lottieUwp="using:LottieUWP"
-    ...
-    />
-    <lottieUwp:LottieAnimationView 
-        FileName="Assets/Gears.json"
-        RepeatCount="-1"
-        AutoPlay="True"
-        VerticalAlignment="Center"
-        HorizontalAlignment="Center"/>
-</Page>
-```
-
-Or you can load it programatically in multiple ways.
-From a json asset in app/src/main/assets:
-```c#
-await animationView.SetAnimationAsync("Assets/hello-world.json");
-animationView.RepeatCount = LottieDrawable.Infinite;
-```
-This method will load the file and parse the animation in the background and asynchronously start rendering once completed.
-
-If your app is crashing at runtime and you are using Visual Studio, make sure the Build Action for each of your .json files is set to 'Content' and not the default 'None.' To change this, click on the file in the Solution Explorer and change the selection in the dropdown next to 'Build Action' under the 'Advance' header in the properties window.
-
-Note: You may have to redo this if you update the .json depending on how you reimport it.
 
 If you want to reuse an animation such as in each item of a list or load it from a network request JsonObject:
 ```c#
@@ -109,8 +74,6 @@ You can also use the awaitable version of LottieComposition's asynchronous metho
 var composition = await LottieComposition.Factory.FromAssetFileNameAsync(assetName);
 ..
 var composition = await LottieComposition.Factory.FromJsonAsync(jsonObject);
-...
-var composition = await LottieComposition.Factory.FromInputStreamAsync(stream);
 ```
 
 ### Image Support
