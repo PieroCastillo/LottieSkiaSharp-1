@@ -9,6 +9,11 @@ namespace LottieUWP.Utils
     /// </summary>
     public class LottieValueAnimator : BaseLottieAnimator
     {
+        LottieDrawable lottieDrawable;
+        public LottieValueAnimator(LottieDrawable lottieDrawable)
+        {
+            this.lottieDrawable = lottieDrawable;
+        }
         private float _speed = 1f;
         private bool _speedReversedForRepeatMode = false;
         private long _lastFrameTimeNs;
@@ -105,7 +110,6 @@ namespace LottieUWP.Utils
             _lastFrameTimeNs = now;
 
             Debug.WriteLineIf(LottieLog.TraceEnabled, $"Tick milliseconds: {timeSinceFrame}", LottieLog.Tag);
-
             OnAnimationUpdate();
             if (ended)
             {
@@ -133,6 +137,8 @@ namespace LottieUWP.Utils
             }
 
             VerifyFrame();
+
+            lottieDrawable.CheckInvalidate();
         }
 
         private float FrameDurationNs
@@ -183,8 +189,8 @@ namespace LottieUWP.Utils
                 {
                     SetMinAndMaxFrames((int)_composition.StartFrame, (int)_composition.EndFrame);
                 }
-
-                FrameRate = _composition.FrameRate;
+                if(FrameRate==0)
+                    FrameRate = _composition.FrameRate;
                 Frame = _frame;
                 _lastFrameTimeNs = SystemnanoTime();
             }

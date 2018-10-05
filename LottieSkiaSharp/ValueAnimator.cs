@@ -81,6 +81,7 @@ namespace LottieUWP
 
         private TimeSpan GetTimerInterval()
         {
+            System.Diagnostics.Debug.WriteLine("rate:" + FrameRate);
             return TimeSpan.FromTicks((long)Math.Floor(TimeSpan.TicksPerSecond / (decimal)FrameRate));
         }
 
@@ -92,6 +93,7 @@ namespace LottieUWP
 
         private void TimerCallback(object state)
         {
+            System.Diagnostics.Debug.WriteLine("Tick");
             DoFrame();
         }
 

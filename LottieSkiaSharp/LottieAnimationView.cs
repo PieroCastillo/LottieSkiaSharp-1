@@ -34,6 +34,10 @@ namespace LottieUWP
     /// </summary>
     public class LottieAnimationView : ContentView, IDisposable
     {
+        public void Unload()
+        {
+            _lottieDrawable?.RaiseLottieDrawableUnloaded();
+        }
         private new static readonly string Tag = typeof(LottieAnimationView).Name;
 
         private readonly LottieDrawable _lottieDrawable;
@@ -219,6 +223,7 @@ namespace LottieUWP
         public LottieAnimationView()
         {
             _lottieDrawable = new LottieDrawable();
+            _lottieDrawable.RaiseLottieDrawableLoaded();
 
             //if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
             //{
@@ -536,7 +541,7 @@ namespace LottieUWP
 
                 ImageDrawable = _lottieDrawable;
 
-                FrameRate = _composition.FrameRate;
+                //FrameRate = _composition.FrameRate;
 
                 //InvalidateArrange();
                 //InvalidateMeasure();

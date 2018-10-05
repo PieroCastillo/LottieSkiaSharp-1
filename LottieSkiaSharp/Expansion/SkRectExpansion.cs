@@ -14,24 +14,24 @@ namespace LottieUWP.Expansion
             var y = Math.Min(left.Y, right.Y);
 
             //  Max with 0 to prevent double weirdness from causing us to be (-epsilon..0)
-            var width = Math.Max(Math.Max(left.X, right.Y) - x, 0);
+            var width = Math.Max(Math.Max(left.X, right.X) - x, 0);
             var height = Math.Max(Math.Max(left.Y, right.Y) - y, 0);
 
             return SKRect.Create(x, y, width, height);
         }
         public static SKMatrix ToSKMatrix(this Matrix3X3 matrix3X3)
         {
-            var m= new SKMatrix();
-            m.Values[0] = matrix3X3.M11;
-            m.Values[1] = matrix3X3.M12;
-            m.Values[2] = matrix3X3.M13;
-            m.Values[3] = matrix3X3.M21;
-            m.Values[4] = matrix3X3.M22;
-            m.Values[5] = matrix3X3.M23;
-            m.Values[6] = matrix3X3.M31;
-            m.Values[7] = matrix3X3.M32;
-            m.Values[8] = matrix3X3.M33;
-            return m;
+            var m = new float[9];
+            m[0] = matrix3X3.M11;
+            m[1] = matrix3X3.M12;
+            m[2] = matrix3X3.M13;
+            m[3] = matrix3X3.M21;
+            m[4] = matrix3X3.M22;
+            m[5] = matrix3X3.M23;
+            m[6] = matrix3X3.M31;
+            m[7] = matrix3X3.M32;
+            m[8] = matrix3X3.M33;  
+            return new SKMatrix() { Values=m};
         }
         public static Matrix3X3 To3x3Matrix(this SKMatrix matrix3X3)
         {

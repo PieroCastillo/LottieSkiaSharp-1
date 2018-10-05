@@ -145,6 +145,7 @@ namespace LottieUWP.Model.Layer
             LottieDrawable.InvalidateSelf();
         }
 
+
         internal void AddAnimation(IBaseKeyframeAnimation newAnimation)
         {
             _animations.Add(newAnimation);

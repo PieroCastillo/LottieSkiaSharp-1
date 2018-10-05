@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LottieSkiaSharp.Sample"
+             x:Class="LottieSkiaSharp.Sample.MainPage"
+             xmlns:lo="clr-namespace:LottieUWP;assembly=LottieSkiaSharp">
+
+    <StackLayout BackgroundColor="Red">
+        <!-- Place new controls here -->
+        <lo:LottieAnimationView HeightRequest="1000" FrameRate="30" RepeatMode="Restart" WidthRequest="1000" x:Name="v">
+            <!--RepeatMode="Restart" FrameRate="10"-->
+        </lo:LottieAnimationView>
+    </StackLayout>
+
+</ContentPage>

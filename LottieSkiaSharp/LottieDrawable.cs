@@ -28,7 +28,7 @@ namespace LottieUWP
     {
         private Matrix3X3 _matrix = Matrix3X3.CreateIdentity();
         private LottieComposition _composition;
-        private readonly LottieValueAnimator _animator = new LottieValueAnimator();
+        private readonly LottieValueAnimator _animator ;
         private float _scale = 1f;
 
         private readonly List<Action<LottieComposition>> _lazyCompositionTasks = new List<Action<LottieComposition>>();
@@ -63,6 +63,7 @@ namespace LottieUWP
 
         public LottieDrawable()
         {
+            _animator = new LottieValueAnimator(this);
             _animator.Update += (sender, e) =>
             {
                 if (_compositionLayer != null)
@@ -80,9 +81,9 @@ namespace LottieUWP
             {
                 ForceSoftwareRenderer = _forceSoftwareRenderer
             };
-
             _canvasControl.Paused = true;
             _canvasControl.Draw += CanvasControlOnDraw;
+            _canvasControl.Paused = false;
             _canvasControl.CanvasAnimatedControlLoaded += (s, args) => InvalidateMeasure();
             Content = _canvasControl;
         }
@@ -92,6 +93,7 @@ namespace LottieUWP
             // Explicitly remove references to allow the Win2D controls to get garbage collected
             if (_canvasControl != null)
             {
+                _canvasControl.Paused = true;
                 //_canvasControl.RemoveFromVisualTree();
                 Content = null;
                 _canvasControl = null;
@@ -271,9 +273,19 @@ namespace LottieUWP
             _animator.ClearComposition();
             InvalidateSelf();
         }
-
+        bool shouldrefresh = false;
+        void ILottieDrawable.InvalidateSelf()
+        {
+            shouldrefresh = true;
+        }
+        public void CheckInvalidate()
+        {
+            if (shouldrefresh)
+                InvalidateSelf();
+        }
         public void InvalidateSelf()
         {
+            shouldrefresh = false;
             _canvasControl?.Invalidate();
         }
 
