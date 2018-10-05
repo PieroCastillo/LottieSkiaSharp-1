@@ -219,20 +219,23 @@ namespace LottieUWP.Utils
 
         public static float DpScale()
         {
-            if (_dpScale == -1)
-            {
-                _dpScale = (int)DisplayInformation.GetForCurrentView().ResolutionScale / 100f;
-            }
-            return _dpScale;
+            return 1;//TODO:
+            //if (_dpScale == -1)
+            //{
+            //    _dpScale = (int)DisplayInformation.GetForCurrentView().ResolutionScale / 100f;
+            //}
+            //return _dpScale;
         }
 
         public static float Dpi()
         {
-            if (_dpi == -1)
-            {
-                _dpi = (int)DisplayInformation.GetForCurrentView().LogicalDpi;
-            }
-            return _dpi;
+            //TODO:
+            return 96f;
+            //if (_dpi == -1)
+            //{
+            //    _dpi = (int)DisplayInformation.GetForCurrentView().LogicalDpi;
+            //}
+            //return _dpi;
         }
     }
 }

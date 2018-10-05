@@ -1,4 +1,5 @@
-﻿namespace LottieUWP
+﻿using SkiaSharp;
+namespace LottieUWP
 {
     /// <summary>
     /// Delegate to handle the loading of fonts that are not packaged in the assets of your app or don't
@@ -10,7 +11,7 @@
         /// <summary>
         /// Override this if you want to return a Typeface from a font family.
         /// </summary>
-        public Typeface FetchFont(string fontFamily)
+        public SKTypeface FetchFont(string fontFamily)
         {
             return null;
         }

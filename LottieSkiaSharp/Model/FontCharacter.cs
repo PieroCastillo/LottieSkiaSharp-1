@@ -5,7 +5,7 @@ namespace LottieUWP.Model
 {
     public class FontCharacter
     {
-        internal static int HashFor(char character, string fontFamily, string style)
+        internal static int HashFor(char character, string fontFamily, SkiaSharp.SKTypefaceStyle style)
         {
             var result = 0;
             result = 31 * result + character;
@@ -17,7 +17,7 @@ namespace LottieUWP.Model
         private readonly char _character;
         private readonly string _fontFamily;
 
-        public FontCharacter(List<ShapeGroup> shapes, char character, double size, double width, string style, string fontFamily)
+        public FontCharacter(List<ShapeGroup> shapes, char character, double size, double width, SkiaSharp.SKTypefaceStyle style, string fontFamily)
         {
             Shapes = shapes;
             _character = character;
@@ -33,7 +33,7 @@ namespace LottieUWP.Model
 
         public double Width { get; }
 
-        private readonly string _style;
+        private readonly SkiaSharp.SKTypefaceStyle _style;
 
         public override int GetHashCode()
         {

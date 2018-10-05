@@ -1,5 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -7,25 +6,23 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage;
+using Microsoft.VisualStudio.Threading;
 
 namespace LottieUWP.Network
 {
     public class NetworkFetcher
     {
-        private readonly CanvasDevice _device;
         private readonly string _url;
 
         private readonly NetworkCache _networkCache;
 
-        public static Task<LottieResult<LottieComposition>> FetchAsync(CanvasDevice device, string url, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task<LottieResult<LottieComposition>> FetchAsync(string url, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return new NetworkFetcher(device, url).FetchAsync(cancellationToken);
+            return new NetworkFetcher(url).FetchAsync(cancellationToken);
         }
 
-        private NetworkFetcher(CanvasDevice device, string url)
+        private NetworkFetcher(string url)
         {
-            _device = device;
             _url = url;
             _networkCache = new NetworkCache(url);
         }
@@ -60,7 +57,7 @@ namespace LottieUWP.Network
                 LottieResult<LottieComposition> result;
                 if (extension == FileExtension.Zip)
                 {
-                    result = await LottieCompositionFactory.FromZipStreamAsync(_device, new ZipArchive(inputStream), _url);
+                    result = await LottieCompositionFactory.FromZipStreamAsync(new ZipArchive(inputStream), _url);
                 }
                 else
                 {
@@ -97,40 +94,40 @@ namespace LottieUWP.Network
                     {
                         return new LottieResult<LottieComposition>(new ArgumentException($"Unable to fetch {_url}. Failed with {response.StatusCode}\n{response.ReasonPhrase}"));
                     }
+                    throw new NotSupportedException();
+                    //StorageFile file;
+                    //FileExtension extension;
+                    //LottieResult<LottieComposition> result;
+                    //switch (response.Content.Headers.ContentType.MediaType)
+                    //{
+                    //    case "application/zip":
+                    //        Debug.WriteLine("Handling zip response.", LottieLog.Tag);
+                    //        extension = FileExtension.Zip;
+                    //        file = await _networkCache.WriteTempCacheFileAsync(await response.Content.ReadAsStreamAsync().WithCancellation(cancellationToken), extension, cancellationToken);
+                    //        using (var stream = await file.OpenStreamForReadAsync().AsAsyncOperation().AsTask(cancellationToken))
+                    //        {
+                    //            result = await LottieCompositionFactory.FromZipStreamAsync( new ZipArchive(stream), _url);
+                    //        }
+                    //        break;
+                    //    case "application/json":
+                    //    default:
+                    //        Debug.WriteLine("Received json response.", LottieLog.Tag);
+                    //        extension = FileExtension.Json;
+                    //        file = await _networkCache.WriteTempCacheFileAsync(await response.Content.ReadAsStreamAsync().WithCancellation(cancellationToken), extension, cancellationToken);
+                    //        using (var stream = await file.OpenStreamForReadAsync().AsAsyncOperation().AsTask(cancellationToken))
+                    //        {
+                    //            result = await LottieCompositionFactory.FromJsonInputStreamAsync(stream, _url);
+                    //        }
+                    //        break;
+                    //}
 
-                    StorageFile file;
-                    FileExtension extension;
-                    LottieResult<LottieComposition> result;
-                    switch (response.Content.Headers.ContentType.MediaType)
-                    {
-                        case "application/zip":
-                            Debug.WriteLine("Handling zip response.", LottieLog.Tag);
-                            extension = FileExtension.Zip;
-                            file = await _networkCache.WriteTempCacheFileAsync(await response.Content.ReadAsStreamAsync().AsAsyncOperation().AsTask(cancellationToken), extension, cancellationToken);
-                            using (var stream = await file.OpenStreamForReadAsync().AsAsyncOperation().AsTask(cancellationToken))
-                            {
-                                result = await LottieCompositionFactory.FromZipStreamAsync(_device, new ZipArchive(stream), _url);
-                            }
-                            break;
-                        case "application/json":
-                        default:
-                            Debug.WriteLine("Received json response.", LottieLog.Tag);
-                            extension = FileExtension.Json;
-                            file = await _networkCache.WriteTempCacheFileAsync(await response.Content.ReadAsStreamAsync().AsAsyncOperation().AsTask(cancellationToken), extension, cancellationToken);
-                            using (var stream = await file.OpenStreamForReadAsync().AsAsyncOperation().AsTask(cancellationToken))
-                            {
-                                result = await LottieCompositionFactory.FromJsonInputStreamAsync(stream, _url);
-                            }
-                            break;
-                    }
+                    //if (result.Value != null)
+                    //{
+                    //    await _networkCache.RenameTempFileAsync(extension, cancellationToken);
+                    //}
 
-                    if (result.Value != null)
-                    {
-                        await _networkCache.RenameTempFileAsync(extension, cancellationToken);
-                    }
-
-                    Debug.WriteLine($"Completed fetch from network. Success: {result.Value != null}", LottieLog.Tag);
-                    return result;
+                    //Debug.WriteLine($"Completed fetch from network. Success: {result.Value != null}", LottieLog.Tag);
+                    //return result;
                 }
             }
         }

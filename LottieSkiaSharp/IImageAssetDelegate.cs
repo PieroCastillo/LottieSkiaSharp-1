@@ -7,6 +7,6 @@ namespace LottieUWP
     /// </summary>
     public interface IImageAssetDelegate
     {
-        SKCanvas FetchBitmap(LottieImageAsset asset);
+        SKBitmap FetchBitmap(LottieImageAsset asset);
     }
 }

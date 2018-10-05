@@ -97,7 +97,7 @@ namespace LottieUWP
 
         private void Invalidate()
         {
-            _animationView?.InvalidateArrange(); // Equivalent?
+            //_animationView?.InvalidateArrange(); // Equivalent?//TODO
             _drawable?.InvalidateSelf();
         }
     }

@@ -63,7 +63,10 @@ namespace LottieUWP.Parser
             }
             reader.EndObject();
 
-            return new FontCharacter(shapes, character, size, width, style, fontFamily);
+            Enum.TryParse<SkiaSharp.SKTypefaceStyle>(style, true, out var result);
+
+
+            return new FontCharacter(shapes, character, size, width,result , fontFamily);
         }
     }
 }

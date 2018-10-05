@@ -4,14 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Microsoft.Graphics.Canvas;
 using LottieUWP.Model;
 using LottieUWP.Value;
+using Xamarin.Forms;
+using SkiaSharp;
 
 namespace LottieUWP
 {
@@ -36,7 +32,7 @@ namespace LottieUWP
     /// <seealso cref="LottieAnimationView.Progress"/>
     /// </para>
     /// </summary>
-    public class LottieAnimationView : UserControl, IDisposable
+    public class LottieAnimationView : ContentView, IDisposable
     {
         private new static readonly string Tag = typeof(LottieAnimationView).Name;
 
@@ -59,14 +55,14 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for FileName.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty FileNameProperty =
-            DependencyProperty.Register("FileName", typeof(string), typeof(LottieAnimationView), new PropertyMetadata(null, FileNamePropertyChangedCallback));
+        public static readonly BindableProperty FileNameProperty =
+            BindableProperty.Create("FileName", typeof(string), typeof(LottieAnimationView),null, propertyChanged: FileNamePropertyChangedCallback);
 
-        private static async void FileNamePropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static async void FileNamePropertyChangedCallback(BindableObject dependencyObject,object old,object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
             {
-                await lottieAnimationView.SetAnimationAsync((string)e.NewValue);
+                await lottieAnimationView.SetAnimationAsync((string)@new);
             }
         }
 
@@ -77,14 +73,14 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for Url.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty UrlProperty =
-            DependencyProperty.Register("Url", typeof(string), typeof(LottieAnimationView), new PropertyMetadata(null, UrlPropertyChangedCallback));
-
-        private static async void UrlPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        public static readonly BindableProperty UrlProperty =
+            BindableProperty.Create("Url", typeof(string), typeof(LottieAnimationView),null,propertyChanged:  UrlPropertyChangedCallback);
+       
+        private static async void UrlPropertyChangedCallback(BindableObject dependencyObject, object old, object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
             {
-                await lottieAnimationView.SetAnimationFromUrlAsync((string)e.NewValue);
+                await lottieAnimationView.SetAnimationFromUrlAsync((string)@new);
             }
         }
 
@@ -95,13 +91,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for AutoPlay.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty AutoPlayProperty =
-            DependencyProperty.Register("AutoPlay", typeof(bool), typeof(LottieAnimationView), new PropertyMetadata(false, AutoPlayPropertyChangedCallback));
+        public static readonly BindableProperty AutoPlayProperty =
+            BindableProperty.Create("AutoPlay", typeof(bool), typeof(LottieAnimationView), false, propertyChanged: AutoPlayPropertyChangedCallback);
 
-        private static void AutoPlayPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void AutoPlayPropertyChangedCallback(BindableObject dependencyObject, object old, object @new)
         {
             var lottieAnimationView = dependencyObject as LottieAnimationView;
-            if ((bool)e.NewValue)
+            if ((bool)@new)
                 lottieAnimationView?._lottieDrawable.PlayAnimation();
         }
 
@@ -126,13 +122,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for ImageAssetsFolder.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ImageAssetsFolderProperty =
-            DependencyProperty.Register("ImageAssetsFolder", typeof(string), typeof(LottieAnimationView), new PropertyMetadata(null, ImageAssetsFolderPropertyChangedCallback));
+        public static readonly BindableProperty ImageAssetsFolderProperty =
+            BindableProperty.Create("ImageAssetsFolder", typeof(string), typeof(LottieAnimationView), null,propertyChanged: ImageAssetsFolderPropertyChangedCallback);
 
-        private static void ImageAssetsFolderPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void ImageAssetsFolderPropertyChangedCallback(BindableObject dependencyObject, object old, object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.ImageAssetsFolder = (string)e.NewValue;
+                lottieAnimationView._lottieDrawable.ImageAssetsFolder = (string)@new;
         }
 
         public Color ColorFilter
@@ -142,16 +138,8 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for ColorFilter.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ColorFilterProperty =
-            DependencyProperty.Register("ColorFilter", typeof(Color), typeof(LottieAnimationView), new PropertyMetadata(Colors.Transparent));
-
-        /** 
-        * Use this to manually set fonts. 
-        */
-        public FontAssetDelegate FontAssetDelegate
-        {
-            set => _lottieDrawable.FontAssetDelegate = value;
-        }
+        public static readonly BindableProperty ColorFilterProperty =
+            BindableProperty.Create("ColorFilter", typeof(Color), typeof(LottieAnimationView), Color.Transparent);
 
         /** 
          * Set this to replace animation text with custom text at runtime 
@@ -212,38 +200,37 @@ namespace LottieUWP
         /// You can also use a fixed view width/height in conjunction with the normal ImageView 
         /// scaleTypes centerCrop and centerInside.
         /// </summary>
-        public double Scale
+        public double DirectScale
         {
             get => (double)GetValue(ScaleProperty);
             set => SetValue(ScaleProperty, value);
         }
 
         // Using a DependencyProperty as the backing store for Scale.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ScaleProperty =
-            DependencyProperty.Register("Scale", typeof(double), typeof(LottieAnimationView), new PropertyMetadata(1.0, ScalePropertyChangedCallback));
+        public static readonly BindableProperty DirectScaleProperty =
+            BindableProperty.Create("DirectScale", typeof(double), typeof(LottieAnimationView),1.0,propertyChanged: ScalePropertyChangedCallback);
 
-        private static void ScalePropertyChangedCallback(DependencyObject dependencyObject,
-            DependencyPropertyChangedEventArgs e)
+        private static void ScalePropertyChangedCallback(BindableObject dependencyObject, object old, object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.DirectScale = (float)Convert.ToDouble(e.NewValue);
+                lottieAnimationView._lottieDrawable.DirectScale = (float)Convert.ToDouble(@new);
         }
 
         public LottieAnimationView()
         {
             _lottieDrawable = new LottieDrawable();
 
-            if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
-            {
-                if (!string.IsNullOrEmpty(FileName))
-                {
-                    SetAnimationAsync(FileName).RunSynchronously();
-                }
-                else if (!string.IsNullOrEmpty(Url))
-                {
-                    SetAnimationFromUrlAsync(Url).RunSynchronously();
-                }
-            }
+            //if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
+            //{
+            //    if (!string.IsNullOrEmpty(FileName))
+            //    {
+            //        SetAnimationAsync(FileName).RunSynchronously();
+            //    }
+            //    else if (!string.IsNullOrEmpty(Url))
+            //    {
+            //        SetAnimationFromUrlAsync(Url).RunSynchronously();
+            //    }
+            //}
             if (AutoPlay)
             {
                 _lottieDrawable.PlayAnimation();
@@ -251,10 +238,9 @@ namespace LottieUWP
             _lottieDrawable.RepeatCount = RepeatCount;
 
             EnableMergePathsForKitKatAndAbove(false);
-
-            SimpleColorFilter filter = new SimpleColorFilter(ColorFilter);
+            var filter = SKColorFilter.CreateBlendMode(SkiaSharp.Views.Forms.Extensions.ToSKColor(ColorFilter), SKBlendMode.Color);
             KeyPath keyPath = new KeyPath("**");
-            var callback = new LottieValueCallback<ColorFilter>(filter);
+            var callback = new LottieValueCallback<SKColorFilter>(filter);
             AddValueCallback(keyPath, LottieProperty.ColorFilter, callback);
 
             EnableOrDisableHardwareLayer();
@@ -270,14 +256,14 @@ namespace LottieUWP
         //    }
         //}
 
-        private Viewbox _viewbox;
+        //private Viewbox _viewbox;
 
         public LottieDrawable ImageDrawable
         {
             set
             {
-                if (_viewbox?.Child == value)
-                    return;
+                //if (_viewbox?.Child == value)
+                //    return;
 
                 if (value != _lottieDrawable)
                 {
@@ -285,16 +271,17 @@ namespace LottieUWP
                 }
                 CancelLoaderTask();
 
-                if (_viewbox == null)
-                {
-                    _viewbox = new Viewbox
-                    {
-                        Stretch = Stretch.Uniform,
-                        StretchDirection = StretchDirection.DownOnly
-                    };
-                    Content = _viewbox;
-                }
-                _viewbox.Child = value;
+                //if (_viewbox == null)
+                //{
+                //    _viewbox = new Viewbox
+                //    {
+                //        Stretch = Stretch.Uniform,
+                //        StretchDirection = StretchDirection.DownOnly
+                //    };
+                //    Content = _viewbox;
+                //}
+                //_viewbox.Child = value;
+                Content = value;
             }
         }
 
@@ -439,7 +426,7 @@ namespace LottieUWP
         {
             _animationName = assetName;
             _compositionTaskCTS = new CancellationTokenSource();
-            await SetCompositionTaskAsync(LottieCompositionFactory.FromAsset(_lottieDrawable?.Device, assetName, _compositionTaskCTS.Token));
+            await SetCompositionTaskAsync(LottieCompositionFactory.FromAsset(assetName, _compositionTaskCTS.Token));
         }
 
         /// <summary>
@@ -479,7 +466,7 @@ namespace LottieUWP
         public async Task SetAnimationFromUrlAsync(string url)
         {
             _compositionTaskCTS = new CancellationTokenSource();
-            await SetCompositionTaskAsync(LottieCompositionFactory.FromUrlAsync(Device, url, _compositionTaskCTS.Token));
+            await SetCompositionTaskAsync(LottieCompositionFactory.FromUrlAsync(url, _compositionTaskCTS.Token));
         }
 
         private async Task SetCompositionTaskAsync(Task<LottieResult<LottieComposition>> compositionTask)
@@ -534,7 +521,13 @@ namespace LottieUWP
                 _composition = value;
                 var isNewComposition = _lottieDrawable.SetComposition(value);
                 EnableOrDisableHardwareLayer();
-                if (_viewbox?.Child == _lottieDrawable && !isNewComposition)
+                //if (_viewbox?.Child == _lottieDrawable && !isNewComposition)
+                //{
+                //    // We can avoid re-setting the drawable, and invalidating the view, since the value
+                //    // hasn't changed.
+                //    return;
+                //}
+                if (Content == _lottieDrawable && !isNewComposition)
                 {
                     // We can avoid re-setting the drawable, and invalidating the view, since the value
                     // hasn't changed.
@@ -545,8 +538,8 @@ namespace LottieUWP
 
                 FrameRate = _composition.FrameRate;
 
-                InvalidateArrange();
-                InvalidateMeasure();
+                //InvalidateArrange();
+                //InvalidateMeasure();
                 _lottieDrawable.InvalidateSelf();
 
                 OnLottieCompositionLoaded();
@@ -677,13 +670,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for Speed.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SpeedProperty =
-            DependencyProperty.Register("Speed", typeof(double), typeof(LottieAnimationView), new PropertyMetadata(1.0, SpeedProperyChangedCallback));
+        public static readonly BindableProperty SpeedProperty =
+            BindableProperty.Create("Speed", typeof(double), typeof(LottieAnimationView),1.0, propertyChanged: SpeedProperyChangedCallback);
 
-        private static void SpeedProperyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void SpeedProperyChangedCallback(BindableObject dependencyObject, object old, object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.Speed = (float)Convert.ToDouble(e.NewValue);
+                lottieAnimationView._lottieDrawable.Speed = (float)Convert.ToDouble(@new);
         }
 
         public event EventHandler<ValueAnimator.ValueAnimatorUpdateEventArgs> AnimatorUpdate
@@ -720,26 +713,6 @@ namespace LottieUWP
             LottieCompositionLoaded = null;
         }
 
-        /// <summary>
-        /// <see cref="RepeatCount"/>
-        /// </summary>
-        [Obsolete("Loop property is Obsolete, and will be removed on a future version. Use RepeatCount instead.")]
-        public bool Loop
-        {
-            get => (bool)GetValue(LoopProperty);
-            set => SetValue(LoopProperty, value);
-        }
-
-        // Using a DependencyProperty as the backing store for Loop.  This enables animation, styling, binding, etc...
-        [Obsolete("Loop property is Obsolete, and will be removed on a future version. Use RepeatCount instead.")]
-        public static readonly DependencyProperty LoopProperty =
-            DependencyProperty.Register("Loop", typeof(bool), typeof(LottieAnimationView), new PropertyMetadata(false, LoopPropertyChangedCallback));
-
-        private static void LoopPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
-        {
-            if (dependencyObject is LottieAnimationView lottieAnimationView && (bool)e.NewValue)
-                lottieAnimationView._lottieDrawable.RepeatCount = LottieDrawable.Infinite;
-        }
 
         /// <summary>
         /// Defines what this animation should do when it reaches the end. This 
@@ -754,13 +727,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for RepeatMode.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty RepeatModeProperty =
-            DependencyProperty.Register("RepeatMode", typeof(RepeatMode), typeof(LottieAnimationView), new PropertyMetadata(RepeatMode.Restart, RepeatModePropertyChangedCallback));
+        public static readonly BindableProperty RepeatModeProperty =
+            BindableProperty.Create("RepeatMode", typeof(RepeatMode), typeof(LottieAnimationView),RepeatMode.Restart, propertyChanged: RepeatModePropertyChangedCallback);
 
-        private static void RepeatModePropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void RepeatModePropertyChangedCallback(BindableObject dependencyObject, object old ,object @new)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.RepeatMode = (RepeatMode)e.NewValue;
+                lottieAnimationView._lottieDrawable.RepeatMode = (RepeatMode)@new;
         }
 
         /// <summary>
@@ -780,13 +753,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for RepeatCount.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty RepeatCountProperty =
-            DependencyProperty.Register("RepeatCount", typeof(int), typeof(LottieAnimationView), new PropertyMetadata(LottieDrawable.Infinite, RepeatCountPropertyChangedCallback));
+        public static readonly BindableProperty RepeatCountProperty =
+            BindableProperty.Create("RepeatCount", typeof(int), typeof(LottieAnimationView), LottieDrawable.Infinite, propertyChanged: RepeatCountPropertyChangedCallback);
 
-        private static void RepeatCountPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void RepeatCountPropertyChangedCallback(BindableObject dependencyObject, object e, object e1)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.RepeatCount = (int)e.NewValue;
+                lottieAnimationView._lottieDrawable.RepeatCount = (int)e1;
         }
 
         public double FrameRate
@@ -796,13 +769,13 @@ namespace LottieUWP
         }
 
         // Using a DependencyProperty as the backing store for RepeatCount.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty FrameRateProperty =
-            DependencyProperty.Register("FrameRate", typeof(double), typeof(LottieAnimationView), new PropertyMetadata(60.0, FrameRatePropertyChangedCallback));
+        public static readonly BindableProperty FrameRateProperty =
+            BindableProperty.Create("FrameRate", typeof(double), typeof(LottieAnimationView), 60.0,propertyChanged:  FrameRatePropertyChangedCallback);
 
-        private static void FrameRatePropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void FrameRatePropertyChangedCallback(BindableObject dependencyObject, object e,object e1)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.FrameRate = (float)Convert.ToDouble(e.NewValue);
+                lottieAnimationView._lottieDrawable.FrameRate = (float)Convert.ToDouble(e1);
         }
 
         public bool IsAnimating => _lottieDrawable.IsAnimating;
@@ -812,7 +785,7 @@ namespace LottieUWP
         /// through ImageAssetsFolder or with an ImageAssetDelegate.
         /// Return the previous Bitmap or null.
         /// </summary>
-        public CanvasBitmap UpdateBitmap(string id, CanvasBitmap bitmap)
+        public SKBitmap UpdateBitmap(string id, SKBitmap bitmap)
         {
             return _lottieDrawable.UpdateBitmap(id, bitmap);
         }
@@ -886,8 +859,6 @@ namespace LottieUWP
             _lottieDrawable.ForceSoftwareRenderer(!useHardwareLayer);
         }
 
-        public CanvasDevice Device => _lottieDrawable?.Device;
-
         private void Dispose(bool disposing)
         {
             _compositionTaskCTS?.Dispose();
@@ -905,10 +876,6 @@ namespace LottieUWP
             Dispose(false);
         }
 
-        protected override AutomationPeer OnCreateAutomationPeer()
-        {
-            return new FrameworkElementAutomationPeer(this);
-        }
 
         //private class SavedState : BaseSavedState
         //{

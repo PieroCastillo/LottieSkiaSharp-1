@@ -1,5 +1,6 @@
 ﻿using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Content;
+using SkiaSharp;
 
 namespace LottieUWP.Parser
 {
@@ -13,7 +14,7 @@ namespace LottieUWP.Parser
             GradientType gradientType = GradientType.Linear;
             AnimatablePointValue startPoint = null;
             AnimatablePointValue endPoint = null;
-            PathFillType fillType = PathFillType.EvenOdd;
+            SKPathFillType fillType = SKPathFillType.EvenOdd;
 
             while (reader.HasNext())
             {
@@ -55,7 +56,7 @@ namespace LottieUWP.Parser
                         endPoint = AnimatableValueParser.ParsePoint(reader, composition);
                         break;
                     case "r":
-                        fillType = reader.NextInt() == 1 ? PathFillType.Winding : PathFillType.EvenOdd;
+                        fillType = reader.NextInt() == 1 ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
                         break;
                     default:
                         reader.SkipValue();

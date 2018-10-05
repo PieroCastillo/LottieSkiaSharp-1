@@ -2,7 +2,6 @@
 using LottieUWP.Network;
 using LottieUWP.Parser;
 using LottieUWP.Utils;
-using Microsoft.Graphics.Canvas;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +10,8 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Storage.Streams;
+using Microsoft.VisualStudio.Threading;
+using SkiaSharp;
 
 namespace LottieUWP
 {
@@ -43,9 +43,9 @@ namespace LottieUWP
         /// <param name="context"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        public static async Task<LottieResult<LottieComposition>> FromUrlAsync(CanvasDevice device, string url, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task<LottieResult<LottieComposition>> FromUrlAsync( string url, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await NetworkFetcher.FetchAsync(device, url, cancellationToken).ConfigureAwait(false);
+            return await NetworkFetcher.FetchAsync( url, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace LottieUWP
         /// <param name="fileName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<LottieResult<LottieComposition>> FromAsset(CanvasDevice device, string fileName, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task<LottieResult<LottieComposition>> FromAsset( string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await CacheAsync(fileName, () =>
             {
-                return FromAssetSync(device, fileName);
+                return FromAssetSync(fileName);
             }, cancellationToken).ConfigureAwait(false);
         }
 
@@ -74,14 +74,14 @@ namespace LottieUWP
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static LottieResult<LottieComposition> FromAssetSync(CanvasDevice device, string fileName)
+        public static LottieResult<LottieComposition> FromAssetSync(string fileName)
         {
             try
             {
                 string cacheKey = "asset_" + fileName;
                 if (fileName.EndsWith(".zip"))
                 {
-                    return FromZipStreamSync(device, new ZipArchive(File.OpenRead(fileName)), cacheKey);
+                    return FromZipStreamSync(new ZipArchive(File.OpenRead(fileName)), cacheKey);
                 }
                 return FromJsonInputStreamSync(File.OpenRead(fileName), cacheKey);
             }
@@ -181,11 +181,11 @@ namespace LottieUWP
             }
         }
 
-        public static async Task<LottieResult<LottieComposition>> FromZipStreamAsync(CanvasDevice device, ZipArchive inputStream, string cacheKey, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task<LottieResult<LottieComposition>> FromZipStreamAsync(ZipArchive inputStream, string cacheKey, CancellationToken cancellationToken = default(CancellationToken))
         {
             return await CacheAsync(cacheKey, () =>
             {
-                return FromZipStreamSync(device, inputStream, cacheKey);
+                return FromZipStreamSync(inputStream, cacheKey);
             }, cancellationToken).ConfigureAwait(false);
         }
 
@@ -198,11 +198,11 @@ namespace LottieUWP
         /// <param name="inputStream"></param>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public static LottieResult<LottieComposition> FromZipStreamSync(CanvasDevice device, ZipArchive inputStream, string cacheKey)
+        public static LottieResult<LottieComposition> FromZipStreamSync( ZipArchive inputStream, string cacheKey)
         {
             try
             {
-                return FromZipStreamSyncInternal(device, inputStream, cacheKey);
+                return FromZipStreamSyncInternal(inputStream, cacheKey);
             }
             finally
             {
@@ -210,10 +210,10 @@ namespace LottieUWP
             }
         }
 
-        private static LottieResult<LottieComposition> FromZipStreamSyncInternal(CanvasDevice device, ZipArchive inputStream, string cacheKey)
+        private static LottieResult<LottieComposition> FromZipStreamSyncInternal( ZipArchive inputStream, string cacheKey)
         {
             LottieComposition composition = null;
-            Dictionary<string, CanvasBitmap> images = new Dictionary<string, CanvasBitmap>();
+            Dictionary<string, SKBitmap> images = new Dictionary<string, SKBitmap>();
 
             try
             {
@@ -231,11 +231,9 @@ namespace LottieUWP
                     {
                         string[] splitName = entry.FullName.Split('/');
                         string name = splitName[splitName.Length - 1];
-                        using (var stream = AsRandomAccessStream(entry.Open()))
+                        using (var stream = entry.Open())
                         {
-                            var task = CanvasBitmap.LoadAsync(device, stream, 160).AsTask();
-                            task.Wait();
-                            var bitmap = task.Result;
+                            var bitmap = SKBitmap.Decode(stream);
                             images[name] = bitmap;
                         }
                     }
@@ -277,13 +275,6 @@ namespace LottieUWP
             return new LottieResult<LottieComposition>(composition);
         }
 
-        private static IRandomAccessStream AsRandomAccessStream(Stream stream)
-        {
-            var ms = new MemoryStream();
-            stream.CopyTo(ms);
-            ms.Seek(0, SeekOrigin.Begin);
-            return ms.AsRandomAccessStream();
-        }
 
         private static LottieImageAsset FindImageAssetForFileName(LottieComposition composition, string fileName)
         {
@@ -318,7 +309,7 @@ namespace LottieUWP
             }
             if (_taskCache.ContainsKey(cacheKey))
             {
-                return await _taskCache[cacheKey].AsAsyncOperation().AsTask(cancellationToken);
+                return await _taskCache[cacheKey].WithCancellation(cancellationToken);
             }
 
             var task = Task.Run(callable, cancellationToken);
@@ -326,7 +317,7 @@ namespace LottieUWP
             try
             {
                 _taskCache[cacheKey] = task;
-                await task.AsAsyncOperation().AsTask(cancellationToken);
+                await task.WithCancellation(cancellationToken);
                 if (cacheKey != null)
                 {
                     LottieCompositionCache.Instance.Put(cacheKey, task.Result.Value);

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Model.Content;
 using LottieUWP.Utils;
 using Newtonsoft.Json;
@@ -63,7 +63,7 @@ namespace LottieUWP.Parser
             }
 
             float[] positions = new float[_colorPoints];
-            Color[] colors = new Color[_colorPoints];
+            SKColor[] colors = new SKColor[_colorPoints];
 
             byte r = 0;
             byte g = 0;
@@ -85,7 +85,7 @@ namespace LottieUWP.Parser
                         break;
                     case 3:
                         byte b = (byte)(value * 255);
-                        colors[colorIndex] = Color.FromArgb(255, r, g, b);
+                        colors[colorIndex] = new SKColor(r, g, b,255);
                         break;
                 }
             }
@@ -131,11 +131,11 @@ namespace LottieUWP.Parser
 
             for (int i = 0; i < gradientColor.Size; i++)
             {
-                Color color = gradientColor.Colors[i];
-                color = Color.FromArgb(GetOpacityAtPosition(gradientColor.Positions[i], positions, opacities),
-                    color.R,
-                    color.G,
-                    color.B
+                SKColor color = gradientColor.Colors[i];
+                color = new SKColor(
+                    color.Red,
+                    color.Green,
+                    color.Blue, GetOpacityAtPosition(gradientColor.Positions[i], positions, opacities)
                 );
                 gradientColor.Colors[i] = color;
             }

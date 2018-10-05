@@ -6,7 +6,7 @@ namespace LottieUWP
     {
         void InvalidateSelf();
         bool UseTextGlyphs();
-        SKTypeface GetTypeface(string fontFamily, string style);
+        SKTypeface GetTypeface(string fontFamily, SKTypefaceStyle style);
         TextDelegate TextDelegate { get; }
         SKBitmap GetImageAsset(string id);
         LottieComposition Composition { get; }

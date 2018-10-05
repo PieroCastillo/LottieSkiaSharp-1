@@ -34,6 +34,7 @@ namespace LottieUWP
             BindableProperty.Create(nameof(Paused), typeof(bool), typeof(CanvasAnimatedControl), true);
 
         public event EventHandler<DrawEventArgs> Draw;
+        public event EventHandler CanvasAnimatedControlLoaded;
         public void Invalidate()
         {
 

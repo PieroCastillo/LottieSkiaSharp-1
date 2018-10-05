@@ -1,4 +1,5 @@
 ﻿using LottieUWP.Model;
+using System;
 
 namespace LottieUWP.Parser
 {
@@ -35,7 +36,9 @@ namespace LottieUWP.Parser
             }
             reader.EndObject();
 
-            return new Font(family, name, style, ascent);
+            Enum.TryParse<SkiaSharp.SKTypefaceStyle>(style, true, out var result);
+
+            return new Font(family, name, result, ascent);
         }
     }
 }

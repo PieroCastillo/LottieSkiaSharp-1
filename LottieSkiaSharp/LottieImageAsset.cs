@@ -1,4 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using SkiaSharp;
 
 namespace LottieUWP
 {
@@ -28,6 +28,6 @@ namespace LottieUWP
 
         /** Pre-set a bitmap for this asset */
         // Returns the bitmap that has been stored for this image asset if one was explicitly set.
-        public CanvasBitmap Bitmap { get; set; }
+        public SKBitmap Bitmap { get; set; }
     }
 }

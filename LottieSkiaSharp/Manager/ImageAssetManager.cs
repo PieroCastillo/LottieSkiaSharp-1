@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas;
+using SkiaSharp;
 
 namespace LottieUWP.Manager
 {
@@ -13,12 +13,10 @@ namespace LottieUWP.Manager
         private readonly string _imagesFolder;
         private IImageAssetDelegate _delegate;
         private readonly Dictionary<string, LottieImageAsset> _imageAssets;
-        private readonly CanvasDevice _context;
 
-        internal ImageAssetManager(string imagesFolder, IImageAssetDelegate @delegate, Dictionary<string, LottieImageAsset> imageAssets, CanvasDevice context)
+        internal ImageAssetManager(string imagesFolder, IImageAssetDelegate @delegate, Dictionary<string, LottieImageAsset> imageAssets)
         {
             _imagesFolder = imagesFolder;
-            _context = context;
             if (!string.IsNullOrEmpty(imagesFolder) && _imagesFolder[_imagesFolder.Length - 1] != '/')
             {
                 _imagesFolder += '/';
@@ -52,7 +50,7 @@ namespace LottieUWP.Manager
         /// <param name="id"></param>
         /// <param name="bitmap"></param>
         /// <returns></returns>
-        internal CanvasBitmap UpdateBitmap(string id, CanvasBitmap bitmap)
+        internal SKBitmap UpdateBitmap(string id, SKBitmap bitmap)
         {
             lock (this)
             {
@@ -71,7 +69,7 @@ namespace LottieUWP.Manager
             }
         }
 
-        internal CanvasBitmap BitmapForId(CanvasDevice device, string id)
+        internal SKBitmap BitmapForId(string id)
         {
             lock (this)
             {
@@ -96,7 +94,7 @@ namespace LottieUWP.Manager
                 }
 
                 var filename = asset.FileName;
-                Task<CanvasBitmap> task = null;
+                Task<SKBitmap> task = null;
                 Stream @is;
 
                 if (filename.StartsWith("data:") && filename.IndexOf("base64,") > 0)
@@ -113,8 +111,7 @@ namespace LottieUWP.Manager
                         Debug.WriteLine($"data URL did not have correct base64 format. {e}", LottieLog.Tag);
                         return null;
                     }
-                    task = CanvasBitmap.LoadAsync(device, @is.AsRandomAccessStream(), 160).AsTask();
-                    task.Wait();
+                    task = Task.FromResult( SKBitmap.Decode(@is));
                     bitmap = task.Result;
 
                     @is.Dispose();
@@ -136,8 +133,7 @@ namespace LottieUWP.Manager
                     Debug.WriteLine($"Unable to open asset. {e}", LottieLog.Tag);
                     return null;
                 }
-                task = CanvasBitmap.LoadAsync(device, @is.AsRandomAccessStream(), 160).AsTask();
-                task.Wait();
+                task = Task.FromResult( SKBitmap.Decode(@is));
                 bitmap = task.Result;
 
                 @is.Dispose();
@@ -165,12 +161,8 @@ namespace LottieUWP.Manager
             }
         }
 
-        public bool HasSameContext(CanvasDevice context)
-        {
-            return context == null && _context == null || _context.Equals(context);
-        }
 
-        private CanvasBitmap PutBitmap(string key, CanvasBitmap bitmap)
+        private SKBitmap PutBitmap(string key, SKBitmap bitmap)
         {
             lock (this)
             {

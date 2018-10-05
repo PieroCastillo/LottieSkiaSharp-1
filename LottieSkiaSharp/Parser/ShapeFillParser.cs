@@ -1,5 +1,6 @@
 ﻿using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Content;
+using SkiaSharp;
 
 namespace LottieUWP.Parser
 {
@@ -38,7 +39,7 @@ namespace LottieUWP.Parser
                 }
             }
 
-            var fillType = fillTypeInt == 1 ? PathFillType.Winding : PathFillType.EvenOdd;
+            var fillType = fillTypeInt == 1 ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
             return new ShapeFill(name, fillEnabled, fillType, color, opacity);
         }
     }

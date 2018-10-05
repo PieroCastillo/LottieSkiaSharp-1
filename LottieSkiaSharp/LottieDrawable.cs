@@ -34,17 +34,27 @@ namespace LottieUWP
         private readonly List<Action<LottieComposition>> _lazyCompositionTasks = new List<Action<LottieComposition>>();
         private ImageAssetManager _imageAssetManager;
         private IImageAssetDelegate _imageAssetDelegate;
-        private FontAssetManager _fontAssetManager;
+        private SKFontManager _fontAssetManager;
         private FontAssetDelegate _fontAssetDelegate;
         private TextDelegate _textDelegate;
         private bool _enableMergePaths;
         private CompositionLayer _compositionLayer;
         private byte _alpha = 255;
         private bool _performanceTrackingEnabled;
-        private SKSurface _bitmapCanvas;
         private CanvasAnimatedControl _canvasControl;
         private bool _forceSoftwareRenderer;
 
+        public event EventHandler LottieDrawableLoaded;
+        public event EventHandler LottieDrawableUnloaded;
+
+        public void RaiseLottieDrawableLoaded()
+        {
+            LottieDrawableLoaded?.Invoke(this, EventArgs.Empty);
+        }
+        public void RaiseLottieDrawableUnloaded()
+        {
+            LottieDrawableUnloaded?.Invoke(this, EventArgs.Empty);
+        }
         /// <summary>
         /// This value used used with the <see cref="RepeatCount"/> property to repeat
         /// the animation indefinitely.
@@ -60,11 +70,11 @@ namespace LottieUWP
                     _compositionLayer.Progress = _animator.AnimatedValueAbsolute;
                 }
             };
-            Loaded += UserControl_Loaded;
-            Unloaded += UserControl_Unloaded;
+            LottieDrawableLoaded += UserControl_Loaded;
+            LottieDrawableUnloaded += UserControl_Unloaded;
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, EventArgs e)
         {
             _canvasControl = new CanvasAnimatedControl
             {
@@ -73,24 +83,25 @@ namespace LottieUWP
 
             _canvasControl.Paused = true;
             _canvasControl.Draw += CanvasControlOnDraw;
-            _canvasControl.Loaded += (s, args) => InvalidateMeasure();
+            _canvasControl.CanvasAnimatedControlLoaded += (s, args) => InvalidateMeasure();
             Content = _canvasControl;
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        private void UserControl_Unloaded(object sender, EventArgs e)
         {
             // Explicitly remove references to allow the Win2D controls to get garbage collected
             if (_canvasControl != null)
             {
-                _canvasControl.RemoveFromVisualTree();
+                //_canvasControl.RemoveFromVisualTree();
+                Content = null;
                 _canvasControl = null;
             }
 
-            if (_bitmapCanvas != null)
-            {
-                _bitmapCanvas.Dispose();
-                _bitmapCanvas = null;
-            }
+            //if (_bitmapCanvas != null)
+            //{
+            //    _bitmapCanvas.Dispose();
+            //    _bitmapCanvas = null;
+            //}
 
             ClearComposition();
         }
@@ -288,67 +299,65 @@ namespace LottieUWP
         {
             lock (this)
             {
-                if (_bitmapCanvas == null)
-                {
-                    return;
-                }
+                var ancanvasControl = (CanvasAnimatedControl)canvasControl;
+                //if (_bitmapCanvas == null)
+                //{
+                //    return;
+                //}
 
-                Draw(canvasControl.Device, _bitmapCanvas, _compositionLayer, _composition?.Bounds ?? default(SKRect), _scale, _alpha, _matrix, canvasControl.Size.Width, canvasControl.Size.Height, args.DrawingSession);
+                Draw( args.Surface, _compositionLayer, _composition?.Bounds ?? default(SKRect), _scale, _alpha, _matrix, args.Surface.Canvas.LocalClipBounds.Width, args.Surface.Canvas.LocalClipBounds.Height);
             }
         }
 
-        private static void Draw(CanvasDevice device, BitmapCanvas bitmapCanvas, CompositionLayer compositionLayer, Rect bounds, float scale, byte alpha, Matrix3X3 matrix, double width, double height, CanvasDrawingSession canvasDrawingSession)
+        private static void Draw(SKSurface bitmapCanvas, CompositionLayer compositionLayer, SKRect bounds, float scale, byte alpha, Matrix3X3 matrix, double width, double height)
         {
-            using (bitmapCanvas.CreateSession(device, width, height, canvasDrawingSession))
+            bitmapCanvas.Canvas.Clear(SKColors.Transparent);
+            LottieLog.BeginSection("Drawable.Draw");
+            if (compositionLayer == null)
             {
-                bitmapCanvas.Clear(Colors.Transparent);
-                LottieLog.BeginSection("Drawable.Draw");
-                if (compositionLayer == null)
-                {
-                    return;
-                }
+                return;
+            }
 
-                var localScale = scale;
-                float extraScale = 1f;
+            var localScale = scale;
+            float extraScale = 1f;
 
-                float maxScale = GetMaxScale(bitmapCanvas, bounds);
-                if (localScale > maxScale)
-                {
-                    localScale = maxScale;
-                    extraScale = scale / localScale;
-                }
+            float maxScale = GetMaxScale(bitmapCanvas.Canvas, bounds);
+            if (localScale > maxScale)
+            {
+                localScale = maxScale;
+                extraScale = scale / localScale;
+            }
 
-                if (extraScale > 1)
-                {
-                    // This is a bit tricky... 
-                    // We can't draw on a canvas larger than ViewConfiguration.get(context).getScaledMaximumDrawingCacheSize() 
-                    // which works out to be roughly the size of the screen because Android can't generate a 
-                    // bitmap large enough to render to. 
-                    // As a result, we cap the scale such that it will never be wider/taller than the screen 
-                    // and then only render in the top left corner of the canvas. We then use extraScale 
-                    // to scale up the rest of the scale. However, since we rendered the animation to the top 
-                    // left corner, we need to scale up and translate the canvas to zoom in on the top left 
-                    // corner. 
-                    bitmapCanvas.Save();
-                    float halfWidth = (float)bounds.Width / 2f;
-                    float halfHeight = (float)bounds.Height / 2f;
-                    float scaledHalfWidth = halfWidth * localScale;
-                    float scaledHalfHeight = halfHeight * localScale;
-                    bitmapCanvas.Translate(
-                        scale * halfWidth - scaledHalfWidth,
-                        scale * halfHeight - scaledHalfHeight);
-                    bitmapCanvas.Scale(extraScale, extraScale, scaledHalfWidth, scaledHalfHeight);
-                }
+            if (extraScale > 1)
+            {
+                // This is a bit tricky... 
+                // We can't draw on a canvas larger than ViewConfiguration.get(context).getScaledMaximumDrawingCacheSize() 
+                // which works out to be roughly the size of the screen because Android can't generate a 
+                // bitmap large enough to render to. 
+                // As a result, we cap the scale such that it will never be wider/taller than the screen 
+                // and then only render in the top left corner of the canvas. We then use extraScale 
+                // to scale up the rest of the scale. However, since we rendered the animation to the top 
+                // left corner, we need to scale up and translate the canvas to zoom in on the top left 
+                // corner. 
+                bitmapCanvas.Canvas.Save();
+                float halfWidth = (float)bounds.Width / 2f;
+                float halfHeight = (float)bounds.Height / 2f;
+                float scaledHalfWidth = halfWidth * localScale;
+                float scaledHalfHeight = halfHeight * localScale;
+                bitmapCanvas.Canvas.Translate(
+                    scale * halfWidth - scaledHalfWidth,
+                    scale * halfHeight - scaledHalfHeight);
+                bitmapCanvas.Canvas.Scale(extraScale, extraScale, scaledHalfWidth, scaledHalfHeight);
+            }
 
-                matrix.Reset();
-                matrix = MatrixExt.PreScale(matrix, localScale, localScale);
-                compositionLayer.Draw(bitmapCanvas, matrix, alpha);
-                LottieLog.EndSection("Drawable.Draw");
+            matrix.Reset();
+            matrix = MatrixExt.PreScale(matrix, localScale, localScale);
+            compositionLayer.Draw(bitmapCanvas.Canvas, matrix, alpha);
+            LottieLog.EndSection("Drawable.Draw");
 
-                if (extraScale > 1)
-                {
-                    bitmapCanvas.Restore();
-                }
+            if (extraScale > 1)
+            {
+                bitmapCanvas.Canvas.Restore();
             }
         }
 
@@ -661,20 +670,6 @@ namespace LottieUWP
 
         public bool IsAnimating => _animator.IsRunning;
 
-        /// <summary>
-        /// Use this to manually set fonts. 
-        /// </summary>
-        public FontAssetDelegate FontAssetDelegate
-        {
-            set
-            {
-                _fontAssetDelegate = value;
-                if (_fontAssetManager != null)
-                {
-                    _fontAssetManager.Delegate = value;
-                }
-            }
-        }
 
         public TextDelegate TextDelegate
         {
@@ -747,8 +742,9 @@ namespace LottieUWP
             }
             WidthRequest = (int)(_composition.Bounds.Width * _scale);
             HeightRequest = (int)(_composition.Bounds.Height * _scale);
-            _bitmapCanvas?.Dispose();
-            _bitmapCanvas = new SKSurface(Width, Height);
+            //_bitmapCanvas?.Dispose();
+            //_bitmapCanvas = new SKSurface(Width, Height);
+            
         }
 
         public void CancelAnimation()
@@ -863,7 +859,7 @@ namespace LottieUWP
         /// </summary>
         /// <returns> the previous Bitmap or null.
         ///  </returns>
-        public CanvasBitmap UpdateBitmap(string id, CanvasBitmap bitmap)
+        public SKBitmap UpdateBitmap(string id, SKBitmap bitmap)
         {
             var bm = ImageAssetManager;
             if (bm == null)
@@ -876,20 +872,15 @@ namespace LottieUWP
             return ret;
         }
 
-        public CanvasBitmap GetImageAsset(string id)
-        {
-            return ImageAssetManager?.BitmapForId(Device, id);
-        }
-
         private ImageAssetManager ImageAssetManager
         {
             get
             {
-                if (_imageAssetManager != null && !_imageAssetManager.HasSameContext(Device))
-                {
-                    _imageAssetManager.RecycleBitmaps();
-                    _imageAssetManager = null;
-                }
+                //if (_imageAssetManager != null && !_imageAssetManager.HasSameContext())
+                //{
+                //    _imageAssetManager.RecycleBitmaps();
+                //    _imageAssetManager = null;
+                //}
 
                 if (_imageAssetManager == null)
                 {
@@ -898,35 +889,33 @@ namespace LottieUWP
                     {
                         clonedDict.Add(entry.Key, entry.Value);
                     }
-                    _imageAssetManager = new ImageAssetManager(ImageAssetsFolder, _imageAssetDelegate, clonedDict, Device);
+                    _imageAssetManager = new ImageAssetManager(ImageAssetsFolder, _imageAssetDelegate, clonedDict);
                 }
 
                 return _imageAssetManager;
             }
         }
 
-        public CanvasDevice Device => _canvasControl?.Device;
-
-        public Typeface GetTypeface(string fontFamily, string style)
+        public SKTypeface GetTypeface(string fontFamily, SKTypefaceStyle style)
         {
-            var assetManager = FontAssetManager;
-            return assetManager?.GetTypeface(fontFamily, style);
+            return  SKTypeface.FromFamilyName(fontFamily, style);
         }
 
-        private FontAssetManager FontAssetManager => _fontAssetManager ??
-            (_fontAssetManager = new FontAssetManager(_fontAssetDelegate));
 
         /**
         * If there are masks or mattes, we can't scale the animation larger than the canvas or else 
         * the off screen rendering for masks and mattes after saveLayer calls will get clipped. 
         */
-        private static float GetMaxScale(BitmapCanvas canvas, Rect bounds)
+        private static float GetMaxScale(SKCanvas canvas, SKRect bounds)
         {
-            var maxScaleX = (float)canvas.Width / (float)bounds.Width;
-            var maxScaleY = (float)canvas.Height / (float)bounds.Height;
+            var maxScaleX = (float)canvas.LocalClipBounds.Width / (float)bounds.Width;
+            var maxScaleY = (float)canvas.LocalClipBounds.Height / (float)bounds.Height;
             return Math.Min(maxScaleX, maxScaleY);
         }
-
+        public SKBitmap GetImageAsset(string id)
+        {
+            return ImageAssetManager?.BitmapForId(id);
+        }
         private void Dispose(bool disposing)
         {
             _animator.Dispose();

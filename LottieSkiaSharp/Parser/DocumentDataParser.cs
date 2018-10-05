@@ -1,4 +1,4 @@
-﻿using Windows.UI;
+﻿using SkiaSharp;
 using LottieUWP.Model;
 
 namespace LottieUWP.Parser
@@ -16,8 +16,8 @@ namespace LottieUWP.Parser
             int tracking = 0;
             double lineHeight = 0;
             double baselineShift = 0;
-            Color fillColor;
-            Color strokeColor;
+            SKColor fillColor = default;
+            SKColor strokeColor = default;
             double strokeWidth = 0;
             bool strokeOverFill = true;
 

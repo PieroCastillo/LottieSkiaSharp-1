@@ -2,7 +2,7 @@
 {
     public class Font
     {
-        public Font(string family, string name, string style, float ascent)
+        public Font(string family, string name, SkiaSharp.SKTypefaceStyle style, float ascent)
         {
             Family = family;
             Name = name;
@@ -14,7 +14,7 @@
 
         public string Name { get; }
 
-        public string Style { get; }
+        public SkiaSharp.SKTypefaceStyle Style { get; }
 
         internal readonly float Ascent;
     }
