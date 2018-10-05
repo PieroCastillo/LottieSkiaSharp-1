@@ -1,24 +1,24 @@
 ﻿using System;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Value;
-using Microsoft.Graphics.Canvas;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Model.Layer
 {
     internal class ImageLayer : BaseLayer
     {
-        private readonly Paint _paint = new Paint(Paint.AntiAliasFlag | Paint.FilterBitmapFlag);
-        private Rect _src;
-        private Rect _dst;
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private readonly SKPaint _paint = SkRectExpansion.CreateSkPaintWithFilterBitmapFlag();
+        private SKRect _src;
+        private SKRect _dst;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
 
         internal ImageLayer(ILottieDrawable lottieDrawable, Layer layerModel) : base(lottieDrawable, layerModel)
         {
         }
 
-        public override void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             var bitmap = Bitmap;
             if (bitmap == null)
@@ -27,20 +27,22 @@ namespace LottieUWP.Model.Layer
             }
             var density = Utils.Utils.DpScale();
 
-            _paint.Alpha = parentAlpha;
+            _paint.SetAlpha(parentAlpha);
             if (_colorFilterAnimation != null)
             {
                 _paint.ColorFilter = _colorFilterAnimation.Value;
             }
             canvas.Save();
-            canvas.Concat(parentMatrix);
+            var sk = parentMatrix.ToSKMatrix();
+            canvas.Concat(ref sk);
+            parentMatrix = sk.To3x3Matrix();
             RectExt.Set(ref _src, 0, 0, PixelWidth, PixelHeight);
             RectExt.Set(ref _dst, 0, 0, (int)(PixelWidth * density), (int)(PixelHeight * density));
             canvas.DrawBitmap(bitmap, _src, _dst, _paint);
             canvas.Restore();
         }
 
-        public override void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public override void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             base.GetBounds(out outBounds, parentMatrix);
             var bitmap = Bitmap;
@@ -50,11 +52,11 @@ namespace LottieUWP.Model.Layer
                 BoundsMatrix.MapRect(ref outBounds);
             }
         }
-        private int PixelWidth => (int)Bitmap.SizeInPixels.Width;
+        private int PixelWidth => (int)Bitmap.Width;
 
-        private int PixelHeight => (int)Bitmap.SizeInPixels.Height;
+        private int PixelHeight => (int)Bitmap.Height;
 
-        private CanvasBitmap Bitmap
+        private SKBitmap Bitmap
         {
             get
             {
@@ -74,7 +76,7 @@ namespace LottieUWP.Model.Layer
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>)callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>)callback);
                 }
             }
         }

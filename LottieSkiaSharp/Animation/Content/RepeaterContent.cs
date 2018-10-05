@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
@@ -102,7 +102,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte alpha)
+        public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte alpha)
         {
             var copies = _copies.Value.Value;
             var offset = _offset.Value.Value;
@@ -117,7 +117,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             _contentGroup.GetBounds(out outBounds, parentMatrix);
         }

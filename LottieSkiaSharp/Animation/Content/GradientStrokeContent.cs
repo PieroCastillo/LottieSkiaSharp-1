@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
@@ -15,9 +15,9 @@ namespace LottieUWP.Animation.Content
         /// </summary>
         private const int CacheStepsMs = 32;
 
-        private readonly Dictionary<long, LinearGradient> _linearGradientCache = new Dictionary<long, LinearGradient>();
-        private readonly Dictionary<long, RadialGradient> _radialGradientCache = new Dictionary<long, RadialGradient>();
-        private Rect _boundsRect;
+        private readonly Dictionary<long, SKShader> _linearGradientCache = new Dictionary<long, SKShader>();
+        private readonly Dictionary<long, SKShader> _radialGradientCache = new Dictionary<long, SKShader>();
+        private SKRect _boundsRect;
 
         private readonly GradientType _type;
         private readonly int _cacheSteps;
@@ -45,7 +45,7 @@ namespace LottieUWP.Animation.Content
             layer.AddAnimation(_endPointAnimation);
         }
 
-        public override void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             GetBounds(out _boundsRect, parentMatrix);
             if (_type == GradientType.Linear)
@@ -62,12 +62,12 @@ namespace LottieUWP.Animation.Content
 
         public override string Name { get; }
 
-        private LinearGradient LinearGradient
+        private SKShader LinearGradient
         {
             get
             {
                 var gradientHash = GradientHash;
-                if (_linearGradientCache.TryGetValue(gradientHash, out LinearGradient gradient))
+                if (_linearGradientCache.TryGetValue(gradientHash, out SKShader gradient))
                 {
                     return gradient;
                 }
@@ -80,18 +80,18 @@ namespace LottieUWP.Animation.Content
                 var y0 = (int)(_boundsRect.Top + _boundsRect.Height / 2 + startPoint.Value.Y);
                 var x1 = (int)(_boundsRect.Left + _boundsRect.Width / 2 + endPoint.Value.X);
                 var y1 = (int)(_boundsRect.Top + _boundsRect.Height / 2 + endPoint.Value.Y);
-                gradient = new LinearGradient(x0, y0, x1, y1, colors, positions);
+                gradient = SKShader.CreateLinearGradient(new SKPoint(x0, y0), new SKPoint(x1, y1), colors, positions, SKShaderTileMode.Clamp);
                 _linearGradientCache.Add(gradientHash, gradient);
                 return gradient;
             }
         }
 
-        private RadialGradient RadialGradient
+        private SKShader RadialGradient
         {
             get
             {
                 var gradientHash = GradientHash;
-                if (_radialGradientCache.TryGetValue(gradientHash, out RadialGradient gradient))
+                if (_radialGradientCache.TryGetValue(gradientHash, out SKShader gradient))
                 {
                     return gradient;
                 }
@@ -105,7 +105,7 @@ namespace LottieUWP.Animation.Content
                 var x1 = (int)(_boundsRect.Left + _boundsRect.Width / 2 + endPoint.Value.X);
                 var y1 = (int)(_boundsRect.Top + _boundsRect.Height / 2 + endPoint.Value.Y);
                 var r = (float)MathExt.Hypot(x1 - x0, y1 - y0);
-                gradient = new RadialGradient(x0, y0, r, colors, positions);
+                gradient = SKShader.CreateRadialGradient(new SKPoint( x0, y0), r, colors, positions,SKShaderTileMode.Clamp);
                 _radialGradientCache.Add(gradientHash, gradient);
                 return gradient;
             }

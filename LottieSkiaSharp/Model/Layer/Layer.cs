@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Value;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Content;
@@ -34,7 +34,7 @@ namespace LottieUWP.Model.Layer
         private readonly LayerType _layerType;
         private readonly MatteType _matteType;
 
-        public Layer(List<IContentModel> shapes, LottieComposition composition, string layerName, long layerId, LayerType layerType, long parentId, string refId, List<Mask> masks, AnimatableTransform transform, int solidWidth, int solidHeight, Color solidColor, float timeStretch, float startFrame, int preCompWidth, int preCompHeight, AnimatableTextFrame text, AnimatableTextProperties textProperties, List<Keyframe<float?>> inOutKeyframes, MatteType matteType, AnimatableFloatValue timeRemapping)
+        public Layer(List<IContentModel> shapes, LottieComposition composition, string layerName, long layerId, LayerType layerType, long parentId, string refId, List<Mask> masks, AnimatableTransform transform, int solidWidth, int solidHeight, SKColor solidColor, float timeStretch, float startFrame, int preCompWidth, int preCompHeight, AnimatableTextFrame text, AnimatableTextProperties textProperties, List<Keyframe<float?>> inOutKeyframes, MatteType matteType, AnimatableFloatValue timeRemapping)
         {
             _shapes = shapes;
             _composition = composition;
@@ -103,7 +103,7 @@ namespace LottieUWP.Model.Layer
 
         internal AnimatableTransform Transform { get; }
 
-        internal Color SolidColor { get; }
+        internal SKColor SolidColor { get; }
 
         internal int SolidHeight { get; }
 

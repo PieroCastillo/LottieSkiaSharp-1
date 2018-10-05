@@ -1,30 +1,24 @@
 ﻿using System.Collections.Generic;
-using Windows.Foundation;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Model.Layer
 {
     internal class TextLayer : BaseLayer
     {
         //private Rect _rectF;
-        private readonly Paint _fillPaint = new Paint(Paint.AntiAliasFlag)
-        {
-            Style = Paint.PaintStyle.Fill
-        };
-        private readonly Paint _strokePaint = new Paint(Paint.AntiAliasFlag)
-        {
-            Style = Paint.PaintStyle.Stroke
-        };
+        private readonly SKPaint _fillPaint = new SKPaint() { IsAntialias = true, Style = SKPaintStyle.Fill };//TODO:
+        private readonly SKPaint _strokePaint = new SKPaint() { IsAntialias = true, Style = SKPaintStyle.Stroke };//TODO:
 
         private readonly Dictionary<FontCharacter, List<ContentGroup>> _contentsForCharacter = new Dictionary<FontCharacter, List<ContentGroup>>();
         private readonly TextKeyframeAnimation _textAnimation;
         private readonly ILottieDrawable _lottieDrawable;
         private readonly LottieComposition _composition;
-        private readonly IBaseKeyframeAnimation<Color?, Color?> _colorAnimation;
-        private readonly IBaseKeyframeAnimation<Color?, Color?> _strokeColorAnimation;
+        private readonly IBaseKeyframeAnimation<SKColor?, SKColor?> _colorAnimation;
+        private readonly IBaseKeyframeAnimation<SKColor?, SKColor?> _strokeColorAnimation;
         private readonly IBaseKeyframeAnimation<float?, float?> _strokeWidthAnimation;
         private readonly IBaseKeyframeAnimation<float?, float?> _trackingAnimation;
 
@@ -66,12 +60,12 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        public override void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             canvas.Save();
             if (!_lottieDrawable.UseTextGlyphs())
             {
-                canvas.SetMatrix(parentMatrix);
+                canvas.SetMatrix(parentMatrix.ToSKMatrix());
             }
             var documentData = _textAnimation.Value;
             if (!_composition.Fonts.TryGetValue(documentData.FontName, out var font))
@@ -85,8 +79,8 @@ namespace LottieUWP.Model.Layer
 
             _strokePaint.Color = _strokeColorAnimation?.Value ?? documentData.StrokeColor;
             var alpha = (byte)(Transform.Opacity.Value * 255 / 100f);
-            _fillPaint.Alpha = alpha;
-            _strokePaint.Alpha = alpha;
+            _fillPaint.SetAlpha(alpha);
+            _strokePaint.SetAlpha(alpha);
 
             if (_strokeWidthAnimation?.Value != null)
             {
@@ -110,7 +104,7 @@ namespace LottieUWP.Model.Layer
             canvas.Restore();
         }
 
-        private void DrawTextGlyphs(DocumentData documentData, Matrix3X3 parentMatrix, Font font, BitmapCanvas canvas)
+        private void DrawTextGlyphs(DocumentData documentData, Matrix3X3 parentMatrix, Font font, SKCanvas canvas)
         {
             var fontScale = (float)documentData.Size / 100;
             var parentScale = Utils.Utils.GetScale(parentMatrix);
@@ -138,7 +132,7 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        private void DrawTextWithFont(DocumentData documentData, Font font, Matrix3X3 parentMatrix, BitmapCanvas canvas)
+        private void DrawTextWithFont(DocumentData documentData, Font font, Matrix3X3 parentMatrix, SKCanvas canvas)
         {
             var parentScale = Utils.Utils.GetScale(parentMatrix);
             var typeface = _lottieDrawable.GetTypeface(font.Family, font.Style);
@@ -172,7 +166,7 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        private void DrawCharacterAsGlyph(FontCharacter character, Matrix3X3 parentMatrix, float fontScale, DocumentData documentData, BitmapCanvas canvas)
+        private void DrawCharacterAsGlyph(FontCharacter character, Matrix3X3 parentMatrix, float fontScale, DocumentData documentData, SKCanvas canvas)
         {
             var contentGroups = GetContentsForCharacter(character);
             for (var j = 0; j < contentGroups.Count; j++)
@@ -196,22 +190,22 @@ namespace LottieUWP.Model.Layer
             }
         }
 
-        private void DrawGlyph(Path path, Paint paint, BitmapCanvas canvas)
+        private void DrawGlyph(Path path, SKPaint paint, SKCanvas canvas)
         {
-            if (paint.Color == Colors.Transparent)
+            if (paint.Color == SKColors.Transparent)
             {
                 return;
             }
-            if (paint.Style == Paint.PaintStyle.Stroke && paint.StrokeWidth == 0)
+            if (paint.Style == SKPaintStyle.Stroke && paint.StrokeWidth == 0)
             {
                 return;
             }
-            canvas.DrawPath(path, paint);
+            canvas.DrawPath(path.GetGeometry(), paint);
         }
 
-        private Rect? DrawCharacterFromFont(char c, DocumentData documentData, BitmapCanvas canvas)
+        private SKRect? DrawCharacterFromFont(char c, DocumentData documentData, SKCanvas canvas)
         {
-            Rect? ret;
+            SKRect? ret;
             if (documentData.StrokeOverFill)
             {
                 ret = DrawCharacter(c, _fillPaint, canvas);
@@ -222,17 +216,20 @@ namespace LottieUWP.Model.Layer
             return DrawCharacter(c, _fillPaint, canvas) ?? ret;
         }
 
-        private Rect? DrawCharacter(char character, Paint paint, BitmapCanvas canvas)
+        private SKRect? DrawCharacter(char character, SKPaint paint, SKCanvas canvas)
         {
-            if (paint.Color == Colors.Transparent)
+            if (paint.Color == SKColors.Transparent)
             {
                 return null;
             }
-            if (paint.Style == Paint.PaintStyle.Stroke && paint.StrokeWidth == 0)
+            if (paint.Style == SKPaintStyle.Stroke && paint.StrokeWidth == 0)
             {
                 return null;
             }
-            return canvas.DrawText(character, paint);
+            SKRect sKRect = SKRect.Empty;
+            paint.MeasureText(character.ToString(), ref sKRect);
+            canvas.DrawText(character.ToString(), new SKPoint(0,0),paint);
+            return sKRect;
         }
 
         private List<ContentGroup> GetContentsForCharacter(FontCharacter character)
@@ -258,11 +255,11 @@ namespace LottieUWP.Model.Layer
             base.AddValueCallback(property, callback);
             if (property == LottieProperty.Color && _colorAnimation != null)
             {
-                _colorAnimation.SetValueCallback((ILottieValueCallback<Color?>)callback);
+                _colorAnimation.SetValueCallback((ILottieValueCallback<SKColor?>)callback);
             }
             else if (property == LottieProperty.StrokeColor && _strokeColorAnimation != null)
             {
-                _strokeColorAnimation.SetValueCallback((ILottieValueCallback<Color?>)callback);
+                _strokeColorAnimation.SetValueCallback((ILottieValueCallback<SKColor?>)callback);
             }
             else if (property == LottieProperty.StrokeWidth && _strokeWidthAnimation != null)
             {

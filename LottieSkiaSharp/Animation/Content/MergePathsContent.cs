@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using LottieUWP.Model.Content;
-using Microsoft.Graphics.Canvas.Geometry;
+using SkiaSharp;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
     internal class MergePathsContent : IPathContent, IGreedyContent
     {
-        private readonly Path _firstPath = new Path();
-        private readonly Path _remainderPath = new Path();
-        private readonly Path _path = new Path();
+        private SKPath _firstPath = new SKPath();
+        private readonly SKPath _remainderPath = new SKPath();
+        private readonly SKPath _path = new SKPath();
 
         private readonly List<IPathContent> _pathContents = new List<IPathContent>();
         private readonly MergePaths _mergePaths;
@@ -49,7 +50,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public Path Path
+        public SKPath Path
         {
             get
             {
@@ -61,16 +62,16 @@ namespace LottieUWP.Animation.Content
                         AddPaths();
                         break;
                     case MergePaths.MergePathsMode.Add:
-                        OpFirstPathWithRest(CanvasGeometryCombine.Union);
+                        OpFirstPathWithRest(SKPathOp.Union);
                         break;
                     case MergePaths.MergePathsMode.Subtract:
-                        OpFirstPathWithRest(CanvasGeometryCombine.Exclude);
+                        OpFirstPathWithRest(SKPathOp.Difference);
                         break;
                     case MergePaths.MergePathsMode.Intersect:
-                        OpFirstPathWithRest(CanvasGeometryCombine.Intersect);
+                        OpFirstPathWithRest(SKPathOp.Intersect);
                         break;
                     case MergePaths.MergePathsMode.ExcludeIntersections:
-                        OpFirstPathWithRest(CanvasGeometryCombine.Xor);
+                        OpFirstPathWithRest(SKPathOp.Xor);
                         break;
                 }
 
@@ -88,7 +89,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        private void OpFirstPathWithRest(CanvasGeometryCombine op)
+        private void OpFirstPathWithRest(SKPathOp op)
         {
             _remainderPath.Reset();
             _firstPath.Reset();
@@ -103,7 +104,7 @@ namespace LottieUWP.Animation.Content
                     for (var j = pathList.Count - 1; j >= 0; j--)
                     {
                         var path = pathList[j].Path;
-                        path.Transform(contentGroup.TransformationMatrix);
+                        path.Transform(contentGroup.TransformationMatrix.ToSKMatrix());
                         _remainderPath.AddPath(path);
                     }
                 }
@@ -120,16 +121,16 @@ namespace LottieUWP.Animation.Content
                 for (var j = 0; j < pathList.Count; j++)
                 {
                     var path = pathList[j].Path;
-                    path.Transform(group.TransformationMatrix);
+                    path.Transform(group.TransformationMatrix.ToSKMatrix());
                     _firstPath.AddPath(path);
                 }
             }
             else
             {
-                _firstPath.Set(lastContent.Path);
+                _firstPath = lastContent.Path;
             }
 
-            _path.Op(_firstPath, _remainderPath, op);
+            _firstPath.Op( _remainderPath, op,_firstPath);
         }
     }
 }

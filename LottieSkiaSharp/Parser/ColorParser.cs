@@ -1,13 +1,13 @@
-﻿using Windows.UI;
+﻿using SkiaSharp;
 using Newtonsoft.Json;
 
 namespace LottieUWP.Parser
 {
-    internal class ColorParser : IValueParser<Color?>
+    internal class ColorParser : IValueParser<SKColor?>
     {
         internal static readonly ColorParser Instance = new ColorParser();
 
-        public Color? Parse(JsonReader reader, float scale)
+        public SKColor? Parse(JsonReader reader, float scale)
         {
             bool isArray = reader.Peek() == JsonToken.StartArray;
             if (isArray)
@@ -30,7 +30,7 @@ namespace LottieUWP.Parser
                 b *= 255;
                 a *= 255;
             }
-            return Color.FromArgb((byte)a, (byte)r, (byte)g, (byte)b);
+            return new SKColor((byte)r, (byte)g, (byte)b, (byte)a);
         }
     }
 }

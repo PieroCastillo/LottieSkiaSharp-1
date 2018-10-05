@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Animatable;
@@ -8,33 +8,33 @@ using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Utils;
 using LottieUWP.Value;
-using Microsoft.Graphics.Canvas.Geometry;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
     public abstract class BaseStrokeContent : IDrawingContent, IKeyPathElementContent
     {
-        private readonly Path _path = new Path();
-        private readonly Path _trimPathPath = new Path();
-        private Rect _rect;
+        private readonly SKPath _path = new SKPath();
+        private SKPath _trimPathPath = new SKPath();
+        private SKRect _rect;
         private readonly ILottieDrawable _lottieDrawable;
         private readonly BaseLayer _layer;
         private readonly List<PathGroup> _pathGroups = new List<PathGroup>();
         private readonly float[] _dashPatternValues;
-        internal readonly Paint Paint = new Paint(Paint.AntiAliasFlag);
+        internal readonly SKPaint Paint = SkRectExpansion.CreateSkPaint();
 
         private readonly IBaseKeyframeAnimation<float?, float?> _widthAnimation;
         private readonly IBaseKeyframeAnimation<int?, int?> _opacityAnimation;
         private readonly List<IBaseKeyframeAnimation<float?, float?>> _dashPatternAnimations;
         private readonly IBaseKeyframeAnimation<float?, float?> _dashPatternOffsetAnimation;
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
 
-        internal BaseStrokeContent(ILottieDrawable lottieDrawable, BaseLayer layer, CanvasCapStyle cap, CanvasLineJoin join, float miterLimit, AnimatableIntegerValue opacity, AnimatableFloatValue width, List<AnimatableFloatValue> dashPattern, AnimatableFloatValue offset)
+        internal BaseStrokeContent(ILottieDrawable lottieDrawable, BaseLayer layer, SKStrokeCap cap, SKStrokeJoin join, float miterLimit, AnimatableIntegerValue opacity, AnimatableFloatValue width, List<AnimatableFloatValue> dashPattern, AnimatableFloatValue offset)
         {
             _lottieDrawable = lottieDrawable;
             _layer = layer;
 
-            Paint.Style = Paint.PaintStyle.Stroke;
+            Paint.Style = SKPaintStyle.Stroke;
             Paint.StrokeCap = cap;
             Paint.StrokeJoin = join;
             Paint.StrokeMiter = miterLimit;
@@ -133,11 +133,11 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public virtual void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public virtual void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             LottieLog.BeginSection("StrokeContent.Draw");
             var alpha = (byte)(parentAlpha / 255f * _opacityAnimation.Value / 100f * 255);
-            Paint.Alpha = alpha;
+            Paint.SetAlpha(alpha);
             Paint.StrokeWidth = _widthAnimation.Value.Value * Utils.Utils.GetScale(parentMatrix);
             if (Paint.StrokeWidth <= 0)
             {
@@ -166,7 +166,8 @@ namespace LottieUWP.Animation.Content
                     _path.Reset();
                     for (var j = pathGroup.Paths.Count - 1; j >= 0; j--)
                     {
-                        _path.AddPath(pathGroup.Paths[j].Path, parentMatrix);
+                        var m = parentMatrix.ToSKMatrix();
+                        _path.AddPath(pathGroup.Paths[j].Path,ref m);
                     }
                     LottieLog.EndSection("StrokeContent.BuildPath");
                     LottieLog.BeginSection("StrokeContent.DrawPath");
@@ -177,7 +178,7 @@ namespace LottieUWP.Animation.Content
             LottieLog.EndSection("StrokeContent.Draw");
         }
 
-        private void ApplyTrimPath(BitmapCanvas canvas, PathGroup pathGroup, Matrix3X3 parentMatrix)
+        private void ApplyTrimPath(SKCanvas canvas, PathGroup pathGroup, Matrix3X3 parentMatrix)
         {
             LottieLog.BeginSection("StrokeContent.ApplyTrimPath");
             if (pathGroup.TrimPath == null)
@@ -188,10 +189,11 @@ namespace LottieUWP.Animation.Content
             _path.Reset();
             for (var j = pathGroup.Paths.Count - 1; j >= 0; j--)
             {
-                _path.AddPath(pathGroup.Paths[j].Path, parentMatrix);
+                var m = parentMatrix.ToSKMatrix();
+                _path.AddPath(pathGroup.Paths[j].Path, ref m);
             }
             float totalLength;
-            using (var pm = new PathMeasure(_path))
+            using (var pm = new SKPathMeasure(_path))
             {
                 totalLength = pm.Length;
             }
@@ -202,11 +204,11 @@ namespace LottieUWP.Animation.Content
             float currentLength = 0;
             for (var j = pathGroup.Paths.Count - 1; j >= 0; j--)
             {
-                _trimPathPath.Set(pathGroup.Paths[j].Path);
-                _trimPathPath.Transform(parentMatrix);
+                _trimPathPath=pathGroup.Paths[j].Path;
+                _trimPathPath.Transform(parentMatrix.ToSKMatrix());
 
                 float length;
-                using (var pm = new PathMeasure(_trimPathPath))
+                using (var pm = new SKPathMeasure(_trimPathPath))
                 {
                     length = pm.Length;
                 }
@@ -224,7 +226,7 @@ namespace LottieUWP.Animation.Content
                         startValue = 0;
                     }
                     var endValue = Math.Min((endLength - totalLength) / length, 1);
-                    Utils.Utils.ApplyTrimPathIfNeeded(_trimPathPath, startValue, endValue, 0);
+                    Utils.Utils.ApplyTrimPathIfNeeded(ref _trimPathPath, startValue, endValue, 0);
                     canvas.DrawPath(_trimPathPath, Paint);
                 }
                 else
@@ -257,7 +259,7 @@ namespace LottieUWP.Animation.Content
                         {
                             endValue = (endLength - currentLength) / length;
                         }
-                        Utils.Utils.ApplyTrimPathIfNeeded(_trimPathPath, startValue, endValue, 0);
+                        Utils.Utils.ApplyTrimPathIfNeeded(ref _trimPathPath, startValue, endValue, 0);
                         canvas.DrawPath(_trimPathPath, Paint);
                     }
                 }
@@ -266,7 +268,7 @@ namespace LottieUWP.Animation.Content
             LottieLog.EndSection("StrokeContent.ApplyTrimPath");
         }
 
-        public void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             LottieLog.BeginSection("StrokeContent.GetBounds");
             _path.Reset();
@@ -275,13 +277,15 @@ namespace LottieUWP.Animation.Content
                 var pathGroup = _pathGroups[i];
                 for (var j = 0; j < pathGroup.Paths.Count; j++)
                 {
-                    _path.AddPath(pathGroup.Paths[j].Path, parentMatrix);
+                    var m = parentMatrix.ToSKMatrix();
+                    _path.AddPath(pathGroup.Paths[j].Path, ref m);
                 }
             }
-            _path.ComputeBounds(out _rect);
+            _path.GetBounds(out _rect);
 
             var width = _widthAnimation.Value.Value;
             RectExt.Set(ref _rect, _rect.Left - width / 2f, _rect.Top - width / 2f, _rect.Right + width / 2f, _rect.Bottom + width / 2f);
+            outBounds = SKRect.Empty;
             RectExt.Set(ref outBounds, _rect);
             // Add padding to account for rounding errors.
             RectExt.Set(ref outBounds, outBounds.Left - 1, outBounds.Top - 1, outBounds.Right + 1, outBounds.Bottom + 1);
@@ -322,7 +326,7 @@ namespace LottieUWP.Animation.Content
                 _dashPatternValues[i] *= scale;
             }
             var offset = _dashPatternOffsetAnimation?.Value ?? 0f;
-            Paint.PathEffect = new DashPathEffect(_dashPatternValues, offset);
+            Paint.PathEffect = SKPathEffect.CreateDash(_dashPatternValues, offset);
             LottieLog.EndSection("StrokeContent.ApplyDashPattern");
         }
 
@@ -349,7 +353,7 @@ namespace LottieUWP.Animation.Content
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>) callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>) callback);
                     _colorFilterAnimation.ValueChanged += OnValueChanged;
                     _layer.AddAnimation(_colorFilterAnimation);
                 }

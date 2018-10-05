@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Value;
 using LottieUWP.Animation.Keyframe;
 
 namespace LottieUWP.Model.Animatable
 {
-    public class AnimatableColorValue : BaseAnimatableValue<Color?, Color?>
+    public class AnimatableColorValue : BaseAnimatableValue<SKColor?, SKColor?>
     {
-        public AnimatableColorValue(List<Keyframe<Color?>> keyframes) : base(keyframes)
+        public AnimatableColorValue(List<Keyframe<SKColor?>> keyframes) : base(keyframes)
         {
         }
 
-        public override IBaseKeyframeAnimation<Color?, Color?> CreateAnimation()
+        public override IBaseKeyframeAnimation<SKColor?, SKColor?> CreateAnimation()
         {
             return new ColorKeyframeAnimation(Keyframes);
         }

@@ -435,6 +435,7 @@ namespace LottieUWP
         */
         public void Op(Path path1, Path path2, CanvasGeometryCombine op)
         {
+            
             // TODO
         }
 

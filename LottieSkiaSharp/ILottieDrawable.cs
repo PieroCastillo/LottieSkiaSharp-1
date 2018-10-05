@@ -1,4 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using SkiaSharp;
 
 namespace LottieUWP
 {
@@ -6,9 +6,9 @@ namespace LottieUWP
     {
         void InvalidateSelf();
         bool UseTextGlyphs();
-        Typeface GetTypeface(string fontFamily, string style);
+        SKTypeface GetTypeface(string fontFamily, string style);
         TextDelegate TextDelegate { get; }
-        CanvasBitmap GetImageAsset(string id);
+        SKBitmap GetImageAsset(string id);
         LottieComposition Composition { get; }
         bool EnableMergePathsForKitKatAndAbove();
     }

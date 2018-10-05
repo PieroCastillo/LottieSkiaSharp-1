@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Utils;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
@@ -19,11 +20,11 @@ namespace LottieUWP.Animation.Content
         private const int CacheStepsMs = 32;
 
         private readonly BaseLayer _layer;
-        private readonly Dictionary<long, LinearGradient> _linearGradientCache = new Dictionary<long, LinearGradient>();
-        private readonly Dictionary<long, RadialGradient> _radialGradientCache = new Dictionary<long, RadialGradient>();
+        private readonly Dictionary<long, SKShader> _linearGradientCache = new Dictionary<long, SKShader>();
+        private readonly Dictionary<long, SKShader> _radialGradientCache = new Dictionary<long, SKShader>();
         private readonly Matrix3X3 _shaderMatrix = Matrix3X3.CreateIdentity();
-        private readonly Path _path = new Path();
-        private readonly Paint _paint = new Paint(Paint.AntiAliasFlag);
+        private readonly SKPath _path = new SKPath();
+        private readonly SKPaint _paint = SkRectExpansion.CreateSkPaint();
         //private Rect _boundsRect;
         private readonly List<IPathContent> _paths = new List<IPathContent>();
         private readonly GradientType _type;
@@ -31,7 +32,7 @@ namespace LottieUWP.Animation.Content
         private readonly IBaseKeyframeAnimation<int?, int?> _opacityAnimation;
         private readonly IBaseKeyframeAnimation<Vector2?, Vector2?> _startPointAnimation;
         private readonly IBaseKeyframeAnimation<Vector2?, Vector2?> _endPointAnimation;
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
         private readonly ILottieDrawable _lottieDrawable;
         private readonly int _cacheSteps;
 
@@ -77,18 +78,19 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             LottieLog.BeginSection("GradientFillContent.Draw");
             _path.Reset();
             for (var i = 0; i < _paths.Count; i++)
             {
-                _path.AddPath(_paths[i].Path, parentMatrix);
+                var m = parentMatrix.ToSKMatrix();
+                _path.AddPath(_paths[i].Path, ref m);
             }
 
             //_path.ComputeBounds(out _boundsRect);
 
-            Shader shader;
+            SKShader shader;
             if (_type == GradientType.Linear)
             {
                 shader = LinearGradient;
@@ -98,7 +100,7 @@ namespace LottieUWP.Animation.Content
                 shader = RadialGradient;
             }
             _shaderMatrix.Set(parentMatrix);
-            shader.LocalMatrix = _shaderMatrix;
+            shader = SKShader.CreateLocalMatrix(shader,_shaderMatrix.ToSKMatrix());
             _paint.Shader = shader;
 
             if (_colorFilterAnimation != null)
@@ -107,33 +109,34 @@ namespace LottieUWP.Animation.Content
             }
 
             var alpha = (byte)(parentAlpha / 255f * _opacityAnimation.Value / 100f * 255);
-            _paint.Alpha = alpha;
+            _paint.SetAlpha(alpha);
 
             canvas.DrawPath(_path, _paint);
             LottieLog.EndSection("GradientFillContent.Draw");
         }
 
-        public void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             _path.Reset();
             for (var i = 0; i < _paths.Count; i++)
             {
-                _path.AddPath(_paths[i].Path, parentMatrix);
+                var m = parentMatrix.ToSKMatrix();
+                _path.AddPath(_paths[i].Path, ref m);
             }
 
-            _path.ComputeBounds(out outBounds);
+            _path.GetBounds(out outBounds);
             // Add padding to account for rounding errors.
             RectExt.Set(ref outBounds, outBounds.Left - 1, outBounds.Top - 1, outBounds.Right + 1, outBounds.Bottom + 1);
         }
 
         public string Name { get; }
 
-        private LinearGradient LinearGradient
+        private SKShader LinearGradient
         {
             get
             {
                 var gradientHash = GradientHash;
-                if (_linearGradientCache.TryGetValue(gradientHash, out LinearGradient gradient))
+                if (_linearGradientCache.TryGetValue(gradientHash, out SKShader gradient))
                 {
                     return gradient;
                 }
@@ -142,18 +145,18 @@ namespace LottieUWP.Animation.Content
                 var gradientColor = _colorAnimation.Value;
                 var colors = gradientColor.Colors;
                 var positions = gradientColor.Positions;
-                gradient = new LinearGradient(startPoint.Value.X, startPoint.Value.Y, endPoint.Value.X, endPoint.Value.Y, colors, positions);
+                gradient = SKShader.CreateLinearGradient(startPoint.Value.ToSkPoint(),endPoint.Value.ToSkPoint(),colors,positions,SKShaderTileMode.Clamp);
                 _linearGradientCache.Add(gradientHash, gradient);
                 return gradient;
             }
         }
 
-        private RadialGradient RadialGradient
+        private SKShader RadialGradient
         {
             get
             {
                 var gradientHash = GradientHash;
-                if (_radialGradientCache.TryGetValue(gradientHash, out RadialGradient gradient))
+                if (_radialGradientCache.TryGetValue(gradientHash, out SKShader gradient))
                 {
                     return gradient;
                 }
@@ -167,7 +170,7 @@ namespace LottieUWP.Animation.Content
                 var x1 = endPoint.Value.X;
                 var y1 = endPoint.Value.Y;
                 var r = (float)MathExt.Hypot(x1 - x0, y1 - y0);
-                gradient = new RadialGradient(x0, y0, r, colors, positions);
+                gradient = SKShader.CreateRadialGradient(new SKPoint(x0,y0),r,colors,positions,SKShaderTileMode.Clamp);
                 _radialGradientCache.Add(gradientHash, gradient);
                 return gradient;
             }
@@ -206,7 +209,7 @@ namespace LottieUWP.Animation.Content
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>)callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>)callback);
                     _colorFilterAnimation.ValueChanged += OnValueChanged;
                     _layer.AddAnimation(_colorFilterAnimation);
                 }

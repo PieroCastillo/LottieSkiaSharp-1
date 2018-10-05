@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
-using Windows.Graphics.Display;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 
 namespace LottieUWP.Utils
@@ -9,8 +8,8 @@ namespace LottieUWP.Utils
     public static class Utils
     {
         public const int SecondInNanos = 1000000000;
-        private static Path _tempPath = new Path();
-        private static Path _tempPath2 = new Path();
+        private static SKPath _tempPath = new SKPath();
+        private static SKPath _tempPath2 = new SKPath();
         private static Vector2[] _points = new Vector2[2];
         private static readonly float Sqrt2 = (float)Math.Sqrt(2);
         private static float _dpScale = -1;
@@ -22,9 +21,9 @@ namespace LottieUWP.Utils
             Dpi();
         }
 
-        internal static Path CreatePath(Vector2 startPoint, Vector2 endPoint, Vector2? cp1, Vector2? cp2)
+        internal static SKPath CreatePath(Vector2 startPoint, Vector2 endPoint, Vector2? cp1, Vector2? cp2)
         {
-            var path = new Path();
+            var path = new SKPath();
             path.MoveTo(startPoint.X, startPoint.Y);
 
             if (cp1.HasValue && cp2.HasValue && (cp1.Value.LengthSquared() != 0 || cp2.Value.LengthSquared() != 0))
@@ -72,19 +71,19 @@ namespace LottieUWP.Utils
             return (float)MathExt.Hypot(dx, dy) / 2f;
         }
 
-        internal static void ApplyTrimPathIfNeeded(Path path, TrimPathContent trimPath)
+        internal static void ApplyTrimPathIfNeeded(ref SKPath path, TrimPathContent trimPath)
         {
             if (trimPath == null)
             {
                 return;
             }
-            ApplyTrimPathIfNeeded(path, trimPath.Start.Value.Value / 100f, trimPath.End.Value.Value / 100f, trimPath.Offset.Value.Value / 360f);
+            ApplyTrimPathIfNeeded(ref path, trimPath.Start.Value.Value / 100f, trimPath.End.Value.Value / 100f, trimPath.Offset.Value.Value / 360f);
         }
 
-        internal static void ApplyTrimPathIfNeeded(Path path, float startValue, float endValue, float offsetValue)
+        internal static void ApplyTrimPathIfNeeded(ref SKPath path, float startValue, float endValue, float offsetValue)
         {
             LottieLog.BeginSection("applyTrimPathIfNeeded");
-            using (var pathMeasure = new PathMeasure(path))
+            using (var pathMeasure = new SKPathMeasure(path))
             {
                 var length = pathMeasure.Length;
                 if (startValue == 1f && endValue == 0f)
@@ -136,26 +135,26 @@ namespace LottieUWP.Utils
                 }
 
                 _tempPath.Reset();
-                pathMeasure.GetSegment(newStart, newEnd, ref _tempPath, true);
+                pathMeasure.GetSegment(newStart, newEnd, _tempPath, true);
 
                 if (newEnd > length)
                 {
                     _tempPath2.Reset();
-                    pathMeasure.GetSegment(0, newEnd % length, ref _tempPath2, true);
+                    pathMeasure.GetSegment(0, newEnd % length, _tempPath2, true);
                     _tempPath.AddPath(_tempPath2);
                 }
                 else if (newStart < 0)
                 {
                     _tempPath2.Reset();
-                    pathMeasure.GetSegment(length + newStart, length, ref _tempPath2, true);
+                    pathMeasure.GetSegment(length + newStart, length, _tempPath2, true);
                     _tempPath.AddPath(_tempPath2);
                 }
             }
-            path.Set(_tempPath);
+            path=_tempPath;
             LottieLog.EndSection("applyTrimPathIfNeeded");
         }
 
-        public static Color GetSolidColorBrush(string hex)
+        public static SKColor GetSolidColorBrush(string hex)
         {
             var index = 1; // Skip '#'
             // '#AARRGGBB'
@@ -170,7 +169,7 @@ namespace LottieUWP.Utils
             var g = (byte)Convert.ToUInt32(hex.Substring(index, 2), 16);
             index += 2;
             var b = (byte)Convert.ToUInt32(hex.Substring(index, 2), 16);
-            return Color.FromArgb(a, r, g, b);
+            return new SKColor(r, g, b, a);
         }
 
         public static bool IsAtLeastVersion(int major, int minor, int patch, int minMajor, int minMinor, int minPatch)

@@ -1,37 +1,38 @@
 ﻿using System.Numerics;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Model.Layer
 {
     internal class SolidLayer : BaseLayer
     {
-        private readonly Paint _paint = new Paint();
+        private readonly SKPaint _paint = SkRectExpansion.CreateSkPaintWithoutAntialias();
         private Vector2[] _points = new Vector2[4];
         private readonly Path _path = new Path();
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
 
         internal SolidLayer(ILottieDrawable lottieDrawable, Layer layerModel) : base(lottieDrawable, layerModel)
         {
             LayerModel = layerModel;
 
-            _paint.Alpha = 0;
-            _paint.Style = Paint.PaintStyle.Fill;
+            _paint.SetAlpha(0);
+            _paint.Style = SKPaintStyle.Fill;
             _paint.Color = layerModel.SolidColor;
         }
 
-        public override void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
-            int backgroundAlpha = LayerModel.SolidColor.A;
+            int backgroundAlpha = LayerModel.SolidColor.Alpha;
             if (backgroundAlpha == 0)
             {
                 return;
             }
 
             var alpha = (byte)(parentAlpha / 255f * (backgroundAlpha / 255f * Transform.Opacity.Value / 100f) * 255);
-            _paint.Alpha = alpha;
+            _paint.SetAlpha(alpha);
             if (_colorFilterAnimation != null)
             {
                 _paint.ColorFilter = _colorFilterAnimation.Value;
@@ -53,11 +54,11 @@ namespace LottieUWP.Model.Layer
                 _path.LineTo(_points[3].X, _points[3].Y);
                 _path.LineTo(_points[0].X, _points[0].Y);
                 _path.Close();
-                canvas.DrawPath(_path, _paint);
+                canvas.DrawPath(_path.GetGeometry(), _paint);
             }
         }
 
-        public override void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public override void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             base.GetBounds(out outBounds, parentMatrix);
             RectExt.Set(ref Rect, 0, 0, LayerModel.SolidWidth, LayerModel.SolidHeight);
@@ -76,7 +77,7 @@ namespace LottieUWP.Model.Layer
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>)callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>)callback);
                 }
             }
         }

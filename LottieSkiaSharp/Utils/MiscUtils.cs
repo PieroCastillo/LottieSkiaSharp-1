@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
+using SkiaSharp;
 
 namespace LottieUWP.Utils
 {
     internal static class MiscUtils
     {
-        internal static void GetPathFromData(ShapeData shapeData, Path outPath)
+        internal static void GetPathFromData(ShapeData shapeData, SKPath outPath)
         {
             outPath.Reset();
             var initialPoint = shapeData.InitialPoint;

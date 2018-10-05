@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Model;
 using LottieUWP.Model.Layer;
 
@@ -34,7 +34,7 @@ namespace LottieUWP
         public List<Layer> Layers { get; private set; }
 
         // This is stored as a set to avoid duplicates.
-        public Rect Bounds { get; private set; }
+        public SKRect Bounds { get; private set; }
         public float StartFrame { get; private set; }
         public float EndFrame { get; private set; }
         public float FrameRate { get; private set; }
@@ -68,7 +68,7 @@ namespace LottieUWP
             }
         }
 
-        public void Init(Rect bounds, float startFrame, float endFrame, float frameRate, List<Layer> layers, Dictionary<long, Layer> layerMap, Dictionary<string, List<Layer>> precomps, Dictionary<string, LottieImageAsset> images, Dictionary<int, FontCharacter> characters, Dictionary<string, Font> fonts)
+        public void Init(SKRect bounds, float startFrame, float endFrame, float frameRate, List<Layer> layers, Dictionary<long, Layer> layerMap, Dictionary<string, List<Layer>> precomps, Dictionary<string, LottieImageAsset> images, Dictionary<int, FontCharacter> characters, Dictionary<string, Font> fonts)
         {
             Bounds = bounds;
             StartFrame = startFrame;

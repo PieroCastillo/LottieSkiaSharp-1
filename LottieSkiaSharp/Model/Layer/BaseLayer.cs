@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model.Content;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Model.Layer
 {
     public abstract class BaseLayer : IDrawingContent, IKeyPathElement
     {
-        private static readonly int SaveFlags = BitmapCanvas.ClipSaveFlag | BitmapCanvas.ClipToLayerSaveFlag | BitmapCanvas.MatrixSaveFlag;
+        //private static readonly int SaveFlags = BitmapCanvas.ClipSaveFlag | BitmapCanvas.ClipToLayerSaveFlag | BitmapCanvas.MatrixSaveFlag;
 
         internal static BaseLayer ForModel(Layer layerModel, ILottieDrawable drawable, LottieComposition composition)
         {
@@ -39,15 +40,15 @@ namespace LottieUWP.Model.Layer
 
         private readonly Path _path = new Path();
         internal Matrix3X3 Matrix = Matrix3X3.CreateIdentity();
-        private readonly Paint _contentPaint = new Paint(Paint.AntiAliasFlag);
-        private readonly Paint _addMaskPaint = new Paint(Paint.AntiAliasFlag);
-        private readonly Paint _subtractMaskPaint = new Paint(Paint.AntiAliasFlag);
-        private readonly Paint _mattePaint = new Paint(Paint.AntiAliasFlag);
-        private readonly Paint _clearPaint = new Paint();
-        protected Rect Rect;
-        private Rect _maskBoundsRect;
-        private Rect _matteBoundsRect;
-        private Rect _tempMaskBoundsRect;
+        private readonly SKPaint _contentPaint = SkRectExpansion.CreateSkPaint();
+        private readonly SKPaint _addMaskPaint = SkRectExpansion.CreateSkPaint();
+        private readonly SKPaint _subtractMaskPaint = SkRectExpansion.CreateSkPaint();
+        private readonly SKPaint _mattePaint = SkRectExpansion.CreateSkPaint();
+        private readonly SKPaint _clearPaint = SkRectExpansion.CreateSkPaintWithoutAntialias();
+        protected SKRect Rect;
+        private SKRect _maskBoundsRect;
+        private SKRect _matteBoundsRect;
+        private SKRect _tempMaskBoundsRect;
         private readonly string _drawTraceName;
         internal Matrix3X3 BoundsMatrix = Matrix3X3.CreateIdentity();
         internal readonly ILottieDrawable LottieDrawable;
@@ -66,17 +67,17 @@ namespace LottieUWP.Model.Layer
             LottieDrawable = lottieDrawable;
             LayerModel = layerModel;
             _drawTraceName = layerModel.Name + ".Draw";
-            _contentPaint.Alpha = 255;
-            _clearPaint.Xfermode = new PorterDuffXfermode(PorterDuff.Mode.Clear);
-            _addMaskPaint.Xfermode = new PorterDuffXfermode(PorterDuff.Mode.DstIn);
-            _subtractMaskPaint.Xfermode = new PorterDuffXfermode(PorterDuff.Mode.DstOut);
+            _contentPaint.SetAlpha(255);
+            _clearPaint.BlendMode = SKBlendMode.Clear;
+            _addMaskPaint.BlendMode = SKBlendMode.DstIn;
+            _subtractMaskPaint.BlendMode = SKBlendMode.DstOut;
             if (layerModel.GetMatteType() == Layer.MatteType.Invert)
             {
-                _mattePaint.Xfermode = new PorterDuffXfermode(PorterDuff.Mode.DstOut);
+                _mattePaint.BlendMode = SKBlendMode.DstOut;
             }
             else
             {
-                _mattePaint.Xfermode = new PorterDuffXfermode(PorterDuff.Mode.DstIn);
+                _mattePaint.BlendMode = SKBlendMode.DstIn;
             }
 
             Transform = layerModel.Transform.CreateAnimation();
@@ -149,13 +150,14 @@ namespace LottieUWP.Model.Layer
             _animations.Add(newAnimation);
         }
 
-        public virtual void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public virtual void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
+            outBounds = SKRect.Empty;
             BoundsMatrix.Set(parentMatrix);
             BoundsMatrix = MatrixExt.PreConcat(BoundsMatrix, Transform.Matrix);
         }
 
-        public void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             LottieLog.BeginSection(_drawTraceName);
             if (!_visible)
@@ -191,11 +193,13 @@ namespace LottieUWP.Model.Layer
             Matrix = MatrixExt.PreConcat(Matrix, Transform.Matrix);
             IntersectBoundsWithMask(ref Rect, Matrix);
 
-            RectExt.Set(ref Rect, 0, 0, canvas.Width, canvas.Height);
+            RectExt.Set(ref Rect, 0, 0, canvas.LocalClipBounds.Width, canvas.LocalClipBounds.Height);
             LottieLog.EndSection("Layer.ComputeBounds");
 
             LottieLog.BeginSection("Layer.SaveLayer");
-            canvas.SaveLayer(Rect, _contentPaint, BitmapCanvas.AllSaveFlag);
+            //canvas.SaveLayer(Rect, _contentPaint, BitmapCanvas.AllSaveFlag);
+            canvas.SaveLayer(Rect, _contentPaint);
+
             LottieLog.EndSection("Layer.SaveLayer");
 
             // Clear the off screen buffer. This is necessary for some phones.
@@ -213,7 +217,9 @@ namespace LottieUWP.Model.Layer
             {
                 LottieLog.BeginSection("Layer.DrawMatte");
                 LottieLog.BeginSection("Layer.SaveLayer");
-                canvas.SaveLayer(Rect, _mattePaint, SaveFlags);
+                //canvas.SaveLayer(Rect, _mattePaint, SaveFlags);
+                canvas.SaveLayer(Rect, _mattePaint);
+
                 LottieLog.EndSection("Layer.SaveLayer");
                 ClearCanvas(canvas);
 
@@ -235,7 +241,7 @@ namespace LottieUWP.Model.Layer
             LottieDrawable.Composition.PerformanceTracker.RecordRenderTime(LayerModel.Name, ms);
         }
 
-        private void ClearCanvas(BitmapCanvas canvas)
+        private void ClearCanvas(SKCanvas canvas)
         {
             LottieLog.BeginSection("Layer.ClearLayer");
             // If we don't pad the clear draw, some phones leave a 1px border of the graphics buffer.
@@ -243,7 +249,7 @@ namespace LottieUWP.Model.Layer
             LottieLog.EndSection("Layer.ClearLayer");
         }
 
-        private void IntersectBoundsWithMask(ref Rect rect, Matrix3X3 matrix)
+        private void IntersectBoundsWithMask(ref SKRect rect, Matrix3X3 matrix)
         {
             RectExt.Set(ref _maskBoundsRect, 0, 0, 0, 0);
             if (!HasMasksOnThisLayer())
@@ -290,7 +296,7 @@ namespace LottieUWP.Model.Layer
             RectExt.Set(ref rect, Math.Max(rect.Left, _maskBoundsRect.Left), Math.Max(rect.Top, _maskBoundsRect.Top), Math.Min(rect.Right, _maskBoundsRect.Right), Math.Min(rect.Bottom, _maskBoundsRect.Bottom));
         }
 
-        private void IntersectBoundsWithMatte(ref Rect rect, Matrix3X3 matrix)
+        private void IntersectBoundsWithMatte(ref SKRect rect, Matrix3X3 matrix)
         {
             if (!HasMatteOnThisLayer())
             {
@@ -306,9 +312,9 @@ namespace LottieUWP.Model.Layer
             RectExt.Set(ref rect, Math.Max(rect.Left, _matteBoundsRect.Left), Math.Max(rect.Top, _matteBoundsRect.Top), Math.Min(rect.Right, _matteBoundsRect.Right), Math.Min(rect.Bottom, _matteBoundsRect.Bottom));
         }
 
-        public abstract void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha);
+        public abstract void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha);
 
-        private void ApplyMasks(BitmapCanvas canvas, Matrix3X3 matrix)
+        private void ApplyMasks(SKCanvas canvas, Matrix3X3 matrix)
         {
             ApplyMasks(canvas, matrix, Mask.MaskMode.MaskModeAdd);
             // Treat intersect masks like add masks. This is not correct but it's closer. 
@@ -316,9 +322,9 @@ namespace LottieUWP.Model.Layer
             ApplyMasks(canvas, matrix, Mask.MaskMode.MaskModeSubtract);
         }
 
-        private void ApplyMasks(BitmapCanvas canvas, Matrix3X3 matrix, Mask.MaskMode maskMode)
+        private void ApplyMasks(SKCanvas canvas, Matrix3X3 matrix, Mask.MaskMode maskMode)
         {
-            Paint paint;
+            SKPaint paint;
             switch (maskMode)
             {
                 case Mask.MaskMode.MaskModeSubtract:
@@ -351,7 +357,8 @@ namespace LottieUWP.Model.Layer
             }
             LottieLog.BeginSection("Layer.DrawMask");
             LottieLog.BeginSection("Layer.SaveLayer");
-            canvas.SaveLayer(Rect, paint, SaveFlags);
+            //canvas.SaveLayer(Rect, paint, SaveFlags);
+            canvas.SaveLayer(Rect, paint);
             LottieLog.EndSection("Layer.SaveLayer");
             ClearCanvas(canvas);
 
@@ -367,10 +374,10 @@ namespace LottieUWP.Model.Layer
                 _path.Set(maskPath);
                 _path.Transform(matrix);
                 var opacityAnimation = _mask.OpacityAnimations[i];
-                var alpha = _contentPaint.Alpha;
-                _contentPaint.Alpha = (byte)(opacityAnimation.Value.Value * 2.55f);
-                canvas.DrawPath(_path, _contentPaint);
-                _contentPaint.Alpha = alpha;
+                var alpha = _contentPaint.Color.Alpha;
+                _contentPaint.SetAlpha( (byte)(opacityAnimation.Value.Value * 2.55f));
+                canvas.DrawPath(_path.GetGeometry(), _contentPaint);
+                _contentPaint.SetAlpha(alpha);
             }
             LottieLog.BeginSection("Layer.RestoreLayer");
             canvas.Restore();

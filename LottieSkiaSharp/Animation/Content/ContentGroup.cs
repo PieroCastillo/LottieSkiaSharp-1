@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
@@ -41,8 +42,8 @@ namespace LottieUWP.Animation.Content
         }
 
         private Matrix3X3 _matrix = Matrix3X3.CreateIdentity();
-        private readonly Path _path = new Path();
-        private Rect _rect;
+        private readonly SKPath _path = new SKPath();
+        private SKRect _rect;
 
         private readonly List<IContent> _contents;
         private List<IPathContent> _pathContents;
@@ -135,7 +136,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public Path Path
+        public SKPath Path
         {
             get
             {
@@ -150,14 +151,15 @@ namespace LottieUWP.Animation.Content
                 {
                     if (_contents[i] is IPathContent pathContent)
                     {
-                        _path.AddPath(pathContent.Path, _matrix);
+                        var m = _matrix.ToSKMatrix();
+                        _path.AddPath(pathContent.Path,ref m);
                     }
                 }
                 return _path;
             }
         }
 
-        public void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             _matrix.Set(parentMatrix);
             byte alpha;
@@ -178,8 +180,9 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
+            outBounds = SKRect.Empty;
             _matrix.Set(parentMatrix);
             if (_transformAnimation != null)
             {

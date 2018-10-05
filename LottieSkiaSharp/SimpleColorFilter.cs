@@ -1,5 +1,4 @@
-﻿using Windows.UI;
-
+﻿using SkiaSharp;
 namespace LottieUWP
 {
     /// <summary>
@@ -12,7 +11,7 @@ namespace LottieUWP
     /// </summary>
     public class SimpleColorFilter : PorterDuffColorFilter
     {
-        public SimpleColorFilter(Color color) : base(color, PorterDuff.Mode.SrcAtop)
+        public SimpleColorFilter(SKColor color) : base(color, PorterDuff.Mode.SrcAtop)
         {
         }
     }

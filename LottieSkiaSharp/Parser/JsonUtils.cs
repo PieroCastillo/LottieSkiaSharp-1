@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Windows.UI;
+using SkiaSharp;
 using Newtonsoft.Json;
 
 namespace LottieUWP.Parser
@@ -13,7 +13,7 @@ namespace LottieUWP.Parser
         /// </summary>
         /// <param name="reader"></param>
         /// <returns></returns>
-        internal static Color JsonToColor(JsonReader reader)
+        internal static SKColor JsonToColor(JsonReader reader)
         {
             reader.BeginArray();
             var r = (byte)(reader.NextDouble() * 255);
@@ -24,7 +24,7 @@ namespace LottieUWP.Parser
                 reader.SkipValue();
             }
             reader.EndArray();
-            return Color.FromArgb(255, r, g, b);
+            return new SKColor(r, g, b, 255);
         }
 
         internal static List<Vector2> JsonToPoints(JsonReader reader, float scale)

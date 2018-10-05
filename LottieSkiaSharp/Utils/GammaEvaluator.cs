@@ -1,5 +1,5 @@
 ﻿using System;
-using Windows.UI;
+using SkiaSharp;
 
 namespace LottieUWP.Utils
 {
@@ -29,11 +29,11 @@ namespace LottieUWP.Utils
             return srgb <= 0.04045f ? srgb / 12.92f : (float)Math.Pow((srgb + 0.055f) / 1.055f, 2.4f);
         }
 
-        internal static Color Evaluate(float fraction, Color startColor, Color endColor)
+        internal static SKColor Evaluate(float fraction, SKColor startColor, SKColor endColor)
         {
             return Evaluate(fraction,
-                startColor.A / 255.0f, startColor.R / 255.0f, startColor.G / 255.0f, startColor.B / 255.0f,
-                endColor.A / 255.0f, endColor.R / 255.0f, endColor.G / 255.0f, endColor.B / 255.0f);
+                startColor.Alpha / 255.0f, startColor.Red / 255.0f, startColor.Green / 255.0f, startColor.Blue / 255.0f,
+                endColor.Alpha / 255.0f, endColor.Red / 255.0f, endColor.Green / 255.0f, endColor.Blue / 255.0f);
         }
 
         //internal static int evaluate(float fraction, int startInt, int endInt)
@@ -51,7 +51,7 @@ namespace LottieUWP.Utils
         //    return evaluate(fraction, startA, startR, startG, startB, endA, endR, endG, endB);
         //}
 
-        static Color Evaluate(float fraction,
+        static SKColor Evaluate(float fraction,
                 float startA, float startR, float startG, float startB,
                 float endA, float endR, float endG, float endB)
         {
@@ -76,7 +76,7 @@ namespace LottieUWP.Utils
             g = OECF_sRGB(g) * 255.0f;
             b = OECF_sRGB(b) * 255.0f;
 
-            return Color.FromArgb((byte)Math.Round(a), (byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b));
+            return new SKColor((byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b), (byte)Math.Round(a));
         }
     }
 }

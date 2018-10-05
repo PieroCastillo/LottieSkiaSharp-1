@@ -1,24 +1,24 @@
 ﻿using System.Collections.Generic;
-using Windows.Foundation;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Utils;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
     internal class FillContent : IDrawingContent, IKeyPathElementContent
     {
-        private readonly Path _path = new Path();
-        private readonly Paint _paint = new Paint(Paint.AntiAliasFlag);
+        private readonly SKPath _path = new SKPath();
+        private readonly SKPaint _paint = SkRectExpansion.CreateSkPaint();
         private readonly BaseLayer _layer;
         private readonly List<IPathContent> _paths = new List<IPathContent>();
-        private readonly IBaseKeyframeAnimation<Color?, Color?> _colorAnimation;
+        private readonly IBaseKeyframeAnimation<SKColor?, SKColor?> _colorAnimation;
         private readonly IBaseKeyframeAnimation<int?, int?> _opacityAnimation;
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
         private readonly ILottieDrawable _lottieDrawable;
 
         internal FillContent(ILottieDrawable lottieDrawable, BaseLayer layer, ShapeFill fill)
@@ -63,12 +63,12 @@ namespace LottieUWP.Animation.Content
 
         public string Name { get; }
 
-        public void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             LottieLog.BeginSection("FillContent.Draw");
-            _paint.Color = _colorAnimation.Value ?? Colors.White;
+            _paint.Color = _colorAnimation.Value ?? SKColors.White;
             var alpha = (byte)(parentAlpha / 255f * _opacityAnimation.Value / 100f * 255);
-            _paint.Alpha = alpha;
+            _paint.SetAlpha(alpha);
 
             if (_colorFilterAnimation != null)
             {
@@ -78,7 +78,8 @@ namespace LottieUWP.Animation.Content
             _path.Reset();
             for (var i = 0; i < _paths.Count; i++)
             {
-                _path.AddPath(_paths[i].Path, parentMatrix);
+                var m = parentMatrix.ToSKMatrix();
+                _path.AddPath(_paths[i].Path, ref m);
             }
 
             canvas.DrawPath(_path, _paint);
@@ -86,14 +87,15 @@ namespace LottieUWP.Animation.Content
             LottieLog.EndSection("FillContent.Draw");
         }
 
-        public void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             _path.Reset();
             for (var i = 0; i < _paths.Count; i++)
             {
-                _path.AddPath(_paths[i].Path, parentMatrix);
+                var m = parentMatrix.ToSKMatrix();
+                _path.AddPath(_paths[i].Path, ref m);
             }
-            _path.ComputeBounds(out outBounds);
+            _path.GetBounds(out outBounds);
             // Add padding to account for rounding errors.
             RectExt.Set(ref outBounds, outBounds.Left - 1, outBounds.Top - 1, outBounds.Right + 1, outBounds.Bottom + 1);
         }
@@ -107,7 +109,7 @@ namespace LottieUWP.Animation.Content
         {
             if (property == LottieProperty.Color)
             {
-                _colorAnimation.SetValueCallback((ILottieValueCallback<Color?>)callback);
+                _colorAnimation.SetValueCallback((ILottieValueCallback<SKColor?>)callback);
             }
             else if (property == LottieProperty.Opacity)
             {
@@ -121,7 +123,7 @@ namespace LottieUWP.Animation.Content
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>)callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>)callback);
                     _colorFilterAnimation.ValueChanged += (sender, args) =>
                     {
                         _lottieDrawable.InvalidateSelf();

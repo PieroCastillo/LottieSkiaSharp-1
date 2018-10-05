@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Numerics;
-using Windows.Foundation;
+using LottieUWP.Expansion;
 
 namespace LottieUWP
 {
@@ -84,7 +84,7 @@ namespace LottieUWP
             };
         }
 
-        public static void MapRect(this Matrix3X3 matrix, ref Rect rect)
+        public static void MapRect(this Matrix3X3 matrix, ref SkiaSharp.SKRect rect)
         {
             var p1 = new Vector2((float)rect.Left, (float)rect.Top);
             var p2 = new Vector2((float)rect.Right, (float)rect.Top);
@@ -101,7 +101,7 @@ namespace LottieUWP
             var yMax = Math.Max(Math.Max(Math.Max(p1.Y, p2.Y), p3.Y), p4.Y);
             var yMin = Math.Min(Math.Min(Math.Min(p1.Y, p2.Y), p3.Y), p4.Y);
 
-            RectExt.Set(ref rect, new Rect(new Point(xMin, yMax), new Point(xMax, yMin)));
+            RectExt.Set(ref rect, SkRectExpansion.CreateSkRect(new SkiaSharp.SKPoint(xMin, yMax), new SkiaSharp.SKPoint(xMax, yMin)));
         }
 
         public static void MapPoints(this Matrix3X3 matrix, ref Vector2[] points)

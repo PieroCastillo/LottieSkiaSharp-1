@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Utils;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
     internal class RectangleContent : IPathContent, IKeyPathElementContent
     {
-        private readonly Path _path = new Path();
-        private Rect _rect;
+        private SKPath _path = new SKPath();
+        private SKRect _rect;
 
         private readonly ILottieDrawable _lottieDrawable;
         private readonly IBaseKeyframeAnimation<Vector2?, Vector2?> _positionAnimation;
@@ -66,7 +67,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public Path Path
+        public SKPath Path
         {
             get
             {
@@ -125,7 +126,7 @@ namespace LottieUWP.Animation.Content
                 }
                 _path.Close();
 
-                Utils.Utils.ApplyTrimPathIfNeeded(_path, _trimPath);
+                Utils.Utils.ApplyTrimPathIfNeeded(ref _path, _trimPath);
 
                 _isPathValid = true;
                 return _path;

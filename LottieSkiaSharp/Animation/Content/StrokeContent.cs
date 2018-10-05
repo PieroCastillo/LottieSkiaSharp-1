@@ -1,4 +1,4 @@
-﻿using Windows.UI;
+﻿using SkiaSharp;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model;
 using LottieUWP.Model.Content;
@@ -10,8 +10,8 @@ namespace LottieUWP.Animation.Content
     internal class StrokeContent : BaseStrokeContent
     {
         private readonly BaseLayer _layer;
-        private readonly IBaseKeyframeAnimation<Color?, Color?> _colorAnimation;
-        private IBaseKeyframeAnimation<ColorFilter, ColorFilter> _colorFilterAnimation;
+        private readonly IBaseKeyframeAnimation<SKColor?, SKColor?> _colorAnimation;
+        private IBaseKeyframeAnimation<SKColorFilter, SKColorFilter> _colorFilterAnimation;
 
         internal StrokeContent(ILottieDrawable lottieDrawable, BaseLayer layer, ShapeStroke stroke) 
             : base(lottieDrawable, layer, ShapeStroke.LineCapTypeToPaintCap(stroke.CapType), ShapeStroke.LineJoinTypeToPaintLineJoin(stroke.JoinType), stroke.MiterLimit, stroke.Opacity, stroke.Width, stroke.LineDashPattern, stroke.DashOffset)
@@ -23,9 +23,9 @@ namespace LottieUWP.Animation.Content
             layer.AddAnimation(_colorAnimation);
         }
 
-        public override void Draw(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
-            Paint.Color = _colorAnimation.Value ?? Colors.White;
+            Paint.Color = _colorAnimation.Value ?? SKColors.White;
             if (_colorFilterAnimation != null)
             {
                 Paint.ColorFilter = _colorFilterAnimation.Value;
@@ -40,7 +40,7 @@ namespace LottieUWP.Animation.Content
             base.AddValueCallback(property, callback);
             if (property == LottieProperty.StrokeColor)
             {
-                _colorAnimation.SetValueCallback((ILottieValueCallback<Color?>)callback);
+                _colorAnimation.SetValueCallback((ILottieValueCallback<SKColor?>)callback);
             }
             else if (property == LottieProperty.ColorFilter)
             {
@@ -50,7 +50,7 @@ namespace LottieUWP.Animation.Content
                 }
                 else
                 {
-                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<ColorFilter, ColorFilter>((ILottieValueCallback<ColorFilter>)callback);
+                    _colorFilterAnimation = new ValueCallbackKeyframeAnimation<SKColorFilter, SKColorFilter>((ILottieValueCallback<SKColorFilter>)callback);
                     _colorFilterAnimation.ValueChanged += OnValueChanged;
                     _layer.AddAnimation(_colorAnimation);
                 }

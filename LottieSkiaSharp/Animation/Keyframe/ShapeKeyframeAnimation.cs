@@ -2,19 +2,20 @@
 using LottieUWP.Model.Content;
 using LottieUWP.Utils;
 using LottieUWP.Value;
+using SkiaSharp;
 
 namespace LottieUWP.Animation.Keyframe
 {
-    internal class ShapeKeyframeAnimation : BaseKeyframeAnimation<ShapeData, Path>
+    internal class ShapeKeyframeAnimation : BaseKeyframeAnimation<ShapeData, SKPath>
     {
         private readonly ShapeData _tempShapeData = new ShapeData();
-        private readonly Path _tempPath = new Path();
+        private readonly SKPath _tempPath = new SKPath();
 
         internal ShapeKeyframeAnimation(List<Keyframe<ShapeData>> keyframes) : base(keyframes)
         {
         }
 
-        public override Path GetValue(Keyframe<ShapeData> keyframe, float keyframeProgress)
+        public override SKPath GetValue(Keyframe<ShapeData> keyframe, float keyframeProgress)
         {
             var startShapeData = keyframe.StartValue;
             var endShapeData = keyframe.EndValue;

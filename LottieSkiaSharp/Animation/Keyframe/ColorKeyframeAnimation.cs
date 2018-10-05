@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Utils;
 using LottieUWP.Value;
 
 namespace LottieUWP.Animation.Keyframe
 {
-    internal class ColorKeyframeAnimation : KeyframeAnimation<Color?>
+    internal class ColorKeyframeAnimation : KeyframeAnimation<SKColor?>
     {
-        internal ColorKeyframeAnimation(List<Keyframe<Color?>> keyframes) : base(keyframes)
+        internal ColorKeyframeAnimation(List<Keyframe<SKColor?>> keyframes) : base(keyframes)
         {
         }
 
-        public override Color? GetValue(Keyframe<Color?> keyframe, float keyframeProgress)
+        public override SKColor? GetValue(Keyframe<SKColor?> keyframe, float keyframeProgress)
         {
             if (keyframe.StartValue == null || keyframe.EndValue == null)
             {

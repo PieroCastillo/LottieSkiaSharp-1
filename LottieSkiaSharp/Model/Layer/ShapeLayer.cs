@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Model.Content;
 
@@ -17,12 +17,12 @@ namespace LottieUWP.Model.Layer
             _contentGroup.SetContents(new List<IContent>(), new List<IContent>());
         }
 
-        public override void DrawLayer(BitmapCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
+        public override void DrawLayer(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
             _contentGroup.Draw(canvas, parentMatrix, parentAlpha);
         }
 
-        public override void GetBounds(out Rect outBounds, Matrix3X3 parentMatrix)
+        public override void GetBounds(out SKRect outBounds, Matrix3X3 parentMatrix)
         {
             base.GetBounds(out outBounds, parentMatrix);
             _contentGroup.GetBounds(out outBounds, BoundsMatrix);

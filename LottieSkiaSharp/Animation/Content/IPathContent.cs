@@ -1,7 +1,8 @@
-﻿namespace LottieUWP.Animation.Content
+﻿using SkiaSharp;
+namespace LottieUWP.Animation.Content
 {
     internal interface IPathContent : IContent
     {
-        Path Path { get; }
+        SKPath Path { get; }
     }
 }

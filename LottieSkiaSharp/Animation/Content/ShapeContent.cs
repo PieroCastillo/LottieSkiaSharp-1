@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
+using SkiaSharp;
 
 namespace LottieUWP.Animation.Content
 {
     internal class ShapeContent : IPathContent
     {
-        private readonly Path _path = new Path();
+        private SKPath _path = new SKPath();
 
         private readonly ILottieDrawable _lottieDrawable;
-        private readonly IBaseKeyframeAnimation<ShapeData, Path> _shapeAnimation;
+        private readonly IBaseKeyframeAnimation<ShapeData, SKPath> _shapeAnimation;
 
         private bool _isPathValid;
         private TrimPathContent _trimPath;
@@ -49,7 +50,7 @@ namespace LottieUWP.Animation.Content
             }
         }
 
-        public Path Path
+        public SKPath Path
         {
             get
             {
@@ -60,10 +61,10 @@ namespace LottieUWP.Animation.Content
 
                 _path.Reset();
 
-                _path.Set(_shapeAnimation.Value);
-                _path.FillType = PathFillType.EvenOdd;
+                _path=_shapeAnimation.Value;
+                _path.FillType = SKPathFillType.EvenOdd;
 
-                Utils.Utils.ApplyTrimPathIfNeeded(_path, _trimPath);
+                Utils.Utils.ApplyTrimPathIfNeeded(ref _path, _trimPath);
 
                 _isPathValid = true;
                 return _path;

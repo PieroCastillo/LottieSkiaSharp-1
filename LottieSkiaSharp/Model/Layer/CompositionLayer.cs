@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Animation.Content;
 using LottieUWP.Animation.Keyframe;
 using LottieUWP.Value;
@@ -11,7 +11,7 @@ namespace LottieUWP.Model.Layer
     {
         private IBaseKeyframeAnimation<float?, float?> _timeRemapping;
         private readonly List<BaseLayer> _layers = new List<BaseLayer>();
-        private Rect _newClipRect;
+        private SKRect _newClipRect;
 
         private bool? _hasMatte;
         private bool? _hasMasks;

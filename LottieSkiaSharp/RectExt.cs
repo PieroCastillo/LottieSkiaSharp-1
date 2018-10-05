@@ -1,24 +1,22 @@
 ﻿using System;
-using Windows.Foundation;
+using SkiaSharp;
 
 namespace LottieUWP
 {
     public static class RectExt
     {
-        public static void Set(ref Rect rect, double left, double top, double right, double bottom)
+        public static void Set(ref SKRect rect, float left, float top, float right, float bottom)
         {
-            rect.X = left;
-            rect.Y = top;
-            rect.Width = Math.Abs(right - left);
-            rect.Height = Math.Abs(bottom - top);
+            rect.Left = left;
+            rect.Top = top;
+            rect.Size = new SKSize(Math.Abs(right - left), Math.Abs(bottom - top));
         }
 
-        public static void Set(ref Rect rect, Rect newRect)
+        public static void Set(ref SKRect rect, SKRect newRect)
         {
-            rect.X = newRect.X;
-            rect.Y = newRect.Y;
-            rect.Width = newRect.Width;
-            rect.Height = newRect.Height;
+            rect.Left = newRect.Left;
+            rect.Top = newRect.Top;
+            rect.Size = new SKSize( newRect.Width, newRect.Height);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Windows.UI;
+﻿using SkiaSharp;
 using LottieUWP.Utils;
 
 namespace LottieUWP.Model.Content
@@ -6,9 +6,9 @@ namespace LottieUWP.Model.Content
     public class GradientColor
     {
         private readonly float[] _positions;
-        private readonly Color[] _colors;
+        private readonly SKColor[] _colors;
 
-        internal GradientColor(float[] positions, Color[] colors)
+        internal GradientColor(float[] positions, SKColor[] colors)
         {
             _positions = positions;
             _colors = colors;
@@ -16,7 +16,7 @@ namespace LottieUWP.Model.Content
 
         internal float[] Positions => _positions;
 
-        internal Color[] Colors => _colors;
+        internal SKColor[] Colors => _colors;
 
         internal int Size => _colors.Length;
 
