@@ -244,28 +244,5 @@ Lottie is named after a German film director and the foremost pioneer of silhoue
 ## Contributing
 Contributors are more than welcome. Just upload a PR with a description of your changes.
 
-## Classes to improve
-* Animator.cs
-* BitmapCanvas.cs
-* ColorFilter.cs
-* DashPathEffect.cs
-* Gradient.cs
-* ImageAssetBitmapManager.cs
-* LinearGradient.cs
-* LottieAnimationView.cs
-* LottieDrawable.cs
-* Paint.cs
-* Path.cs
-* PathEffect.cs
-* PathMeasure.cs
-* PorterDuff.cs
-* PorterDuffXfermode.cs
-* RadialGradient.cs
-* Shader.cs
-* PorterDuffColorFilter.cs
-* ValueAnimator.cs
-
-Other classes may also need changes, but these are the ones that are known to have actionable TODOs.
-
 ## Issues or feature requests?
 File github issues for anything that is unexpectedly broken. If an After Effects file is not working, please attach it to your issue. Debugging without the original file is much more difficult.
