@@ -2,7 +2,7 @@
 using LottieUWP.Animation.Content;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Layer;
-using Microsoft.Graphics.Canvas.Geometry;
+using SkiaSharp;
 
 namespace LottieUWP.Model.Content
 {
@@ -15,17 +15,17 @@ namespace LottieUWP.Model.Content
             Unknown
         }
 
-        internal static CanvasCapStyle LineCapTypeToPaintCap(LineCapType lineCapType)
+        internal static SKStrokeCap LineCapTypeToPaintCap(LineCapType lineCapType)
         {
             switch (lineCapType)
             {
                 case LineCapType.Butt:
-                    return CanvasCapStyle.Flat;
+                    return SKStrokeCap.Butt;
                 case LineCapType.Round:
-                    return CanvasCapStyle.Round;
+                    return SKStrokeCap.Round;
                 case LineCapType.Unknown:
                 default:
-                    return CanvasCapStyle.Square;
+                    return SKStrokeCap.Square;
             }
         }
         
@@ -36,17 +36,17 @@ namespace LottieUWP.Model.Content
             Bevel
         }
 
-        internal static CanvasLineJoin LineJoinTypeToPaintLineJoin(LineJoinType lineJoinType)
+        internal static SKStrokeJoin LineJoinTypeToPaintLineJoin(LineJoinType lineJoinType)
         {
             switch (lineJoinType)
             {
                 case LineJoinType.Bevel:
-                    return CanvasLineJoin.Bevel;
+                    return SKStrokeJoin.Bevel;
                 case LineJoinType.Miter:
-                    return CanvasLineJoin.Miter;
+                    return SKStrokeJoin.Miter;
                 case LineJoinType.Round:
                 default:
-                    return CanvasLineJoin.Round;
+                    return SKStrokeJoin.Round;
             }
         }
 

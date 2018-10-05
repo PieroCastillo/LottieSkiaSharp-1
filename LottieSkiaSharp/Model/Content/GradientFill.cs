@@ -1,12 +1,13 @@
 ﻿using LottieUWP.Animation.Content;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Layer;
+using SkiaSharp;
 
 namespace LottieUWP.Model.Content
 {
     public class GradientFill : IContentModel
     {
-        public GradientFill(string name, GradientType gradientType, PathFillType fillType,
+        public GradientFill(string name, GradientType gradientType, SKPathFillType fillType,
             AnimatableGradientColorValue gradientColor, AnimatableIntegerValue opacity, AnimatablePointValue startPoint,
             AnimatablePointValue endPoint, AnimatableFloatValue highlightLength, AnimatableFloatValue highlightAngle)
         {
@@ -25,7 +26,7 @@ namespace LottieUWP.Model.Content
 
         internal GradientType GradientType { get; }
 
-        internal PathFillType FillType { get; }
+        internal SKPathFillType FillType { get; }
 
         internal AnimatableGradientColorValue GradientColor { get; }
 

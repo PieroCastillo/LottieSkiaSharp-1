@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Windows.Foundation;
+using SkiaSharp;
 using LottieUWP.Model;
 using LottieUWP.Model.Layer;
 
@@ -76,7 +76,7 @@ namespace LottieUWP.Parser
 
             int scaledWidth = (int)(width * scale);
             int scaledHeight = (int)(height * scale);
-            Rect bounds = new Rect(0, 0, scaledWidth, scaledHeight);
+            SKRect bounds = new SKRect(0, 0, scaledWidth, scaledHeight);
 
             composition.Init(bounds, startFrame, endFrame, frameRate, layers, layerMap, precomps, images, characters, fonts);
 

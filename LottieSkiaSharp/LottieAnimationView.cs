@@ -226,7 +226,7 @@ namespace LottieUWP
             DependencyPropertyChangedEventArgs e)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView)
-                lottieAnimationView._lottieDrawable.Scale = (float)Convert.ToDouble(e.NewValue);
+                lottieAnimationView._lottieDrawable.DirectScale = (float)Convert.ToDouble(e.NewValue);
         }
 
         public LottieAnimationView()

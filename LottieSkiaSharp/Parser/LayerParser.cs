@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Windows.UI;
+using SkiaSharp;
 using LottieUWP.Value;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Content;
@@ -12,7 +12,7 @@ namespace LottieUWP.Parser
         public static Layer Parse(LottieComposition composition)
         {
             var bounds = composition.Bounds;
-            return new Layer(new List<IContentModel>(), composition, "__container", -1, Layer.LayerType.PreComp, -1, null, new List<Mask>(), new AnimatableTransform(), 0, 0, default(Color), 0, 0, (int)bounds.Width, (int)bounds.Height, null, null, new List<Keyframe<float?>>(), Layer.MatteType.None, null);
+            return new Layer(new List<IContentModel>(), composition, "__container", -1, Layer.LayerType.PreComp, -1, null, new List<Mask>(), new AnimatableTransform(), 0, 0, default, 0, 0, (int)bounds.Width, (int)bounds.Height, null, null, new List<Keyframe<float?>>(), Layer.MatteType.None, null);
         }
 
         public static Layer Parse(JsonReader reader, LottieComposition composition)
@@ -25,7 +25,7 @@ namespace LottieUWP.Parser
             long layerId = 0;
             int solidWidth = 0;
             int solidHeight = 0;
-            Color solidColor;
+            SKColor solidColor = default;
             int preCompWidth = 0;
             int preCompHeight = 0;
             long parentId = -1;

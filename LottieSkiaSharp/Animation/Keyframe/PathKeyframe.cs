@@ -1,4 +1,5 @@
 ﻿using LottieUWP.Value;
+using SkiaSharp;
 using System.Numerics;
 
 namespace LottieUWP.Animation.Keyframe
@@ -18,6 +19,6 @@ namespace LottieUWP.Animation.Keyframe
         /// <summary>
         /// This will be null if the startValue and endValue are the same.
         /// </summary>
-        internal Path Path { get; }
+        internal SKPath Path { get; }
     }
 }

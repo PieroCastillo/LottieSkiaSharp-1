@@ -1,6 +1,7 @@
 ﻿using LottieUWP.Animation.Content;
 using LottieUWP.Model.Animatable;
 using LottieUWP.Model.Layer;
+using SkiaSharp;
 
 namespace LottieUWP.Model.Content
 {
@@ -10,7 +11,7 @@ namespace LottieUWP.Model.Content
         private readonly AnimatableColorValue _color;
         private readonly AnimatableIntegerValue _opacity;
 
-        public ShapeFill(string name, bool fillEnabled, PathFillType fillType, AnimatableColorValue color, AnimatableIntegerValue opacity)
+        public ShapeFill(string name, bool fillEnabled, SKPathFillType fillType, AnimatableColorValue color, AnimatableIntegerValue opacity)
         {
             Name = name;
             _fillEnabled = fillEnabled;
@@ -25,7 +26,7 @@ namespace LottieUWP.Model.Content
 
         internal AnimatableIntegerValue Opacity => _opacity;
 
-        internal PathFillType FillType { get; }
+        internal SKPathFillType FillType { get; }
 
         public IContent ToContent(ILottieDrawable drawable, BaseLayer layer)
         {

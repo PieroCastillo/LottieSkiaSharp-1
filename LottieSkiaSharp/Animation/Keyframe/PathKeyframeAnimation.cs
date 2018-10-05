@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using SkiaSharp;
 
 namespace LottieUWP.Animation.Keyframe
 {
     internal class PathKeyframeAnimation : KeyframeAnimation<Vector2?>, IDisposable
     {
         private PathKeyframe _pathMeasureKeyframe;
-        private PathMeasure _pathMeasure;
+        private SKPathMeasure _pathMeasure;
 
         internal PathKeyframeAnimation(List<Keyframe<Vector2?>> keyframes)
             : base(keyframes)
@@ -19,7 +20,7 @@ namespace LottieUWP.Animation.Keyframe
         {
             var pathKeyframe = (PathKeyframe) keyframe;
             var path = pathKeyframe.Path;
-            if (path == null || path.Contours.Count == 0)
+            if (path == null || path.IsEmpty)
             {
                 return keyframe.StartValue;
             }
@@ -38,18 +39,18 @@ namespace LottieUWP.Animation.Keyframe
             if (_pathMeasureKeyframe != pathKeyframe)
             {
                 _pathMeasure?.Dispose();
-                _pathMeasure = new PathMeasure(path);
+                _pathMeasure = new SKPathMeasure(path);
                 _pathMeasureKeyframe = pathKeyframe;
             }
-
-            return _pathMeasure.GetPosTan(keyframeProgress * _pathMeasure.Length);
+            _pathMeasure.GetPositionAndTangent(keyframeProgress * _pathMeasure.Length,out var pos, out _);
+            return new Vector2(pos.X, pos.Y);
         }
 
         private void Dispose(bool disposing)
         {
             if (_pathMeasure != null)
             {
-                _pathMeasure.Dispose(disposing);
+                _pathMeasure.Dispose();
                 _pathMeasure = null;
             }
         }

@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using LottieUWP.Animation.Content;
 using LottieUWP.Manager;
 using LottieUWP.Model;
@@ -12,9 +9,8 @@ using LottieUWP.Model.Layer;
 using LottieUWP.Parser;
 using LottieUWP.Utils;
 using LottieUWP.Value;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using Windows.Foundation;
+using SkiaSharp;
+using Xamarin.Forms;
 
 namespace LottieUWP
 {
@@ -28,7 +24,7 @@ namespace LottieUWP
     /// of compositions.
     /// </para>
     /// </summary>
-    public class LottieDrawable : UserControl, ILottieDrawable, IAnimatable, IDisposable
+    public class LottieDrawable : ContentView, ILottieDrawable, IAnimatable, IDisposable
     {
         private Matrix3X3 _matrix = Matrix3X3.CreateIdentity();
         private LottieComposition _composition;
@@ -45,7 +41,7 @@ namespace LottieUWP
         private CompositionLayer _compositionLayer;
         private byte _alpha = 255;
         private bool _performanceTrackingEnabled;
-        private BitmapCanvas _bitmapCanvas;
+        private SKSurface _bitmapCanvas;
         private CanvasAnimatedControl _canvasControl;
         private bool _forceSoftwareRenderer;
 
@@ -211,7 +207,7 @@ namespace LottieUWP
                 BuildCompositionLayer();
                 _animator.Composition = composition;
                 Progress = _animator.AnimatedFraction;
-                Scale = _scale;
+                DirectScale = _scale;
                 UpdateBounds();
 
                 // We copy the tasks to a new ArrayList so that if this method is called from multiple threads, 
@@ -288,7 +284,7 @@ namespace LottieUWP
         //    }
         //}
 
-        private void CanvasControlOnDraw(ICanvasAnimatedControl canvasControl, CanvasAnimatedDrawEventArgs args)
+        private void CanvasControlOnDraw(object canvasControl, DrawEventArgs args)
         {
             lock (this)
             {
@@ -297,7 +293,7 @@ namespace LottieUWP
                     return;
                 }
 
-                Draw(canvasControl.Device, _bitmapCanvas, _compositionLayer, _composition?.Bounds ?? default(Rect), _scale, _alpha, _matrix, canvasControl.Size.Width, canvasControl.Size.Height, args.DrawingSession);
+                Draw(canvasControl.Device, _bitmapCanvas, _compositionLayer, _composition?.Bounds ?? default(SKRect), _scale, _alpha, _matrix, canvasControl.Size.Width, canvasControl.Size.Height, args.DrawingSession);
             }
         }
 
@@ -703,7 +699,7 @@ namespace LottieUWP
         /// You can also use a fixed view width/height in conjunction with the normal ImageView 
         /// scaleTypes centerCrop and centerInside. 
         /// </summary>
-        public float Scale
+        public float DirectScale
         {
             set
             {
@@ -716,12 +712,6 @@ namespace LottieUWP
                 }
             }
             get => _scale;
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            InvalidateSelf();
-            return base.MeasureOverride(availableSize);
         }
 
         /// <summary>
@@ -755,10 +745,10 @@ namespace LottieUWP
             {
                 return;
             }
-            Width = (int)(_composition.Bounds.Width * _scale);
-            Height = (int)(_composition.Bounds.Height * _scale);
+            WidthRequest = (int)(_composition.Bounds.Width * _scale);
+            HeightRequest = (int)(_composition.Bounds.Height * _scale);
             _bitmapCanvas?.Dispose();
-            _bitmapCanvas = new BitmapCanvas(Width, Height);
+            _bitmapCanvas = new SKSurface(Width, Height);
         }
 
         public void CancelAnimation()
@@ -958,9 +948,9 @@ namespace LottieUWP
         {
             internal readonly string LayerName;
             internal readonly string ContentName;
-            internal readonly ColorFilter ColorFilter;
+            internal readonly SKColorFilter ColorFilter;
 
-            internal ColorFilterData(string layerName, string contentName, ColorFilter colorFilter)
+            internal ColorFilterData(string layerName, string contentName, SKColorFilter colorFilter)
             {
                 LayerName = layerName;
                 ContentName = contentName;

@@ -7,13 +7,14 @@ using LottieUWP.Model.Content;
 using LottieUWP.Model.Layer;
 using LottieUWP.Utils;
 using LottieUWP.Value;
+using LottieUWP.Expansion;
 
 namespace LottieUWP.Animation.Content
 {
     public class RepeaterContent : IDrawingContent, IPathContent, IGreedyContent, IKeyPathElementContent
     {
         private Matrix3X3 _matrix = Matrix3X3.CreateIdentity();
-        private readonly Path _path = new Path();
+        private readonly SKPath _path = new SKPath();
 
         private readonly ILottieDrawable _lottieDrawable;
         private readonly BaseLayer _layer;
@@ -85,7 +86,7 @@ namespace LottieUWP.Animation.Content
             _contentGroup.SetContents(contentsBefore, contentsAfter);
         }
 
-        public Path Path
+        public SKPath Path
         {
             get
             {
@@ -96,7 +97,9 @@ namespace LottieUWP.Animation.Content
                 for (var i = (int)copies - 1; i >= 0; i--)
                 {
                     _matrix.Set(_transform.GetMatrixForRepeater(i + offset));
-                    _path.AddPath(contentPath, _matrix);
+                    var m = _matrix.ToSKMatrix();
+                    _path.AddPath(contentPath, ref m);
+                    _matrix = m.To3x3Matrix();
                 }
                 return _path;
             }

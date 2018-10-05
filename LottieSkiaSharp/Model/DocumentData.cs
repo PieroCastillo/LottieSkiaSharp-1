@@ -1,5 +1,5 @@
 ﻿using System;
-using Windows.UI;
+using SkiaSharp;
 
 namespace LottieUWP.Model
 {
@@ -12,12 +12,12 @@ namespace LottieUWP.Model
         internal readonly int Tracking;
         internal readonly double LineHeight;
         internal readonly double BaselineShift;
-        internal readonly Color Color;
-        internal readonly Color StrokeColor;
+        internal readonly SKColor Color;
+        internal readonly SKColor StrokeColor;
         internal readonly double StrokeWidth;
         internal readonly bool StrokeOverFill;
 
-        internal DocumentData(string text, string fontName, double size, int justification, int tracking, double lineHeight, double baselineShift, Color color, Color strokeColor, double strokeWidth, bool strokeOverFill)
+        internal DocumentData(string text, string fontName, double size, int justification, int tracking, double lineHeight, double baselineShift, SKColor color, SKColor strokeColor, double strokeWidth, bool strokeOverFill)
         {
             Text = text;
             FontName = fontName;

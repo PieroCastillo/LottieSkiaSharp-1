@@ -1,4 +1,4 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using SkiaSharp;
 
 namespace LottieUWP
 {
@@ -7,6 +7,6 @@ namespace LottieUWP
     /// </summary>
     public interface IImageAssetDelegate
     {
-        CanvasBitmap FetchBitmap(LottieImageAsset asset);
+        SKCanvas FetchBitmap(LottieImageAsset asset);
     }
 }
