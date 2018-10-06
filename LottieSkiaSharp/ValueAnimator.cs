@@ -106,7 +106,7 @@ namespace LottieUWP
 
         private void TimerCallback(object state)
         {
-            System.Diagnostics.Debug.WriteLine("Tick");
+            //System.Diagnostics.Debug.WriteLine("Tick");
             DoFrame();
         }
 

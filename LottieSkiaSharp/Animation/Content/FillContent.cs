@@ -75,11 +75,8 @@ namespace LottieUWP.Animation.Content
         }
 
         public string Name { get; }
-        static FillContent fs;
         public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
-            if (fs == null)
-                fs = this;
             LottieLog.BeginSection("FillContent.Draw");
             _paint.Color = _colorAnimation.Value ?? SKColors.White;
             var alpha = (byte)(parentAlpha / 255f * _opacityAnimation.Value / 100f * 255);

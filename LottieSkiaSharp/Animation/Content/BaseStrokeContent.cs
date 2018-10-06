@@ -217,7 +217,7 @@ namespace LottieUWP.Animation.Content
             float currentLength = 0;
             for (var j = pathGroup.Paths.Count - 1; j >= 0; j--)
             {
-                _trimPathPath=pathGroup.Paths[j].Path;
+                _trimPathPath.Set(pathGroup.Paths[j].Path);
                 _trimPathPath.Transform(parentMatrix.ToSKMatrix());
 
                 float length;
