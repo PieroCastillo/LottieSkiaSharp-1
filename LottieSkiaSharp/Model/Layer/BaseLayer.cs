@@ -83,7 +83,9 @@ namespace LottieUWP.Model.Layer
             _contentPaint.SetAlpha(255);
             _clearPaint.BlendMode = SKBlendMode.Clear;
             _addMaskPaint.BlendMode = SKBlendMode.DstIn;
+            _addMaskPaint.Color = SKColors.Black;
             _subtractMaskPaint.BlendMode = SKBlendMode.DstOut;
+            _subtractMaskPaint.Color = SKColors.Black;
             if (layerModel.GetMatteType() == Layer.MatteType.Invert)
             {
                 _mattePaint.BlendMode = SKBlendMode.DstOut;
@@ -92,6 +94,7 @@ namespace LottieUWP.Model.Layer
             {
                 _mattePaint.BlendMode = SKBlendMode.DstIn;
             }
+            _mattePaint.Color = SKColors.Black;
 
             Transform = layerModel.Transform.CreateAnimation();
             Transform.ValueChanged += OnValueChanged;
@@ -277,7 +280,7 @@ namespace LottieUWP.Model.Layer
                 var mask = _mask.Masks[i];
                 var maskAnimation = _mask.MaskAnimations[i];
                 var maskPath = maskAnimation.Value;
-                _path=(maskPath);
+                _path.Set(maskPath);
                 _path.Transform(matrix.ToSKMatrix());
 
                 switch (mask.GetMaskMode())
@@ -385,11 +388,12 @@ namespace LottieUWP.Model.Layer
                 }
                 var maskAnimation = _mask.MaskAnimations[i];
                 var maskPath = maskAnimation.Value;
-                _path=(maskPath);
+                _path.Set(maskPath);
                 _path.Transform(matrix.ToSKMatrix());
+
                 var opacityAnimation = _mask.OpacityAnimations[i];
                 var alpha = _contentPaint.Color.Alpha;
-                _contentPaint.SetAlpha( (byte)(opacityAnimation.Value.Value * 2.55f));
+                _contentPaint.SetAlpha((byte)(opacityAnimation.Value.Value * 2.55f));
                 canvas.DrawPath(_path, _contentPaint);
                 _contentPaint.SetAlpha(alpha);
             }

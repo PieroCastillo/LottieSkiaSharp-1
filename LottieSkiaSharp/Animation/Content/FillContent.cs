@@ -98,8 +98,6 @@ namespace LottieUWP.Animation.Content
             }
 
             canvas.DrawPath(_path, _paint);
-            if(fs==this)
-                System.Diagnostics.Debug.WriteLine(_path.Bounds.Location.X);
 
             LottieLog.EndSection("FillContent.Draw");
         }

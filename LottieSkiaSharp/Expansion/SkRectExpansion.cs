@@ -43,8 +43,8 @@ namespace LottieUWP.Expansion
             m[5] = matrix3X3.M23;
             m[6] = matrix3X3.M31;
             m[7] = matrix3X3.M32;
-            m[8] = matrix3X3.M33;  
-            return new SKMatrix() { Values=m};
+            m[8] = matrix3X3.M33;
+            return new SKMatrix() { Values = m };
         }
         public static Matrix3X3 To3x3Matrix(this SKMatrix matrix3X3)
         {
@@ -73,11 +73,11 @@ namespace LottieUWP.Expansion
         }
         public static SKPaint CreateSkPaintWithoutAntialias()
         {
-            return new SKPaint() { Color = SKColors.Transparent };
+            return new SKPaint() { Color = SKColors.Transparent};
         }
         public static SKPaint CreateSkPaintWithFilterBitmapFlag()
         {
-            return new SKPaint() { Color = SKColors.Transparent,IsAntialias=true};//TODO:ImageFilter=new SKImageFilter()
+            return new SKPaint() { Color = SKColors.Transparent,IsAntialias=true };//TODO:ImageFilter=new SKImageFilter()
         }
         public static void ArcTo(this SKPath path,float x, float y, SKRect rect, float startAngle, float sweepAngle)
         {
@@ -98,6 +98,11 @@ namespace LottieUWP.Expansion
             var _endPoint = GetPointAtAngle(startAngle + sweepAngle);
             path.ArcTo(_endPoint, (float)MathExt.ToRadians(sweepAngle), SKPathArcSize.Small, SKPathDirection.Clockwise, new SKPoint(_a, _b));
         }
-        
+        public static void Set(this SKPath sKPath,SKPath path)
+        {
+            sKPath.Reset();
+            sKPath.FillType = path.FillType;
+            sKPath.AddPath(path);
+        }
     }
 }

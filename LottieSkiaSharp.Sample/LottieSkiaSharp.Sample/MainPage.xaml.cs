@@ -18,7 +18,7 @@ namespace LottieSkiaSharp.Sample
         async void load()
         {
 #if WINDOWS_UWP
-            v.FileName = (await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync("Assets\\AndroidWave.json")).Path;
+            v.FileName = (await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync("Assets\\lottiefiles.com - ATM.json")).Path;
 #endif
             v.UseHardwareAcceleration(false);
             
