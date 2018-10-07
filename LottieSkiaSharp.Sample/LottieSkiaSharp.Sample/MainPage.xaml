@@ -7,7 +7,7 @@
 
     <StackLayout BackgroundColor="White">
         <!-- Place new controls here -->
-        <lo:LottieAnimationView HeightRequest="1000" FrameRate="25" Speed="0.3" RepeatMode="Restart" WidthRequest="1000" x:Name="v">
+        <lo:LottieAnimationView HeightRequest="1000" FrameRate="25" RepeatMode="Restart" WidthRequest="1000" x:Name="v">
             <!--RepeatMode="Restart" FrameRate="10"-->
         </lo:LottieAnimationView>
     </StackLayout>

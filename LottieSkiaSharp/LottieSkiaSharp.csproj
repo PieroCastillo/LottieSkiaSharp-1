@@ -1,8 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard1.4</TargetFramework>
     <LangVersion>7.1</LangVersion>
+    <Authors>yinyue200.com</Authors>
+    <Company />
+    <PackageLicenseUrl>https://github.com/yinyue200/LottieSkiaSharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.8</Version>
+    <Description>Copyright 2018 yinyue200.com</Description>
+    <PackageProjectUrl>https://github.com/yinyue200/LottieSkiaSharp</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
