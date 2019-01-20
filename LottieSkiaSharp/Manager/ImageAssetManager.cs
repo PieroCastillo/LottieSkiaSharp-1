@@ -77,6 +77,12 @@ namespace LottieUWP.Manager
                     }
                     return null;
                 }
+
+                SKBitmap prevBitmap = null;
+                if (_imageAssets.TryGetValue(id, out var prevAsset))
+                {
+                    prevBitmap = prevAsset.Bitmap;
+                }
                 PutBitmap(id, bitmap);
                 return bitmap;
             }
