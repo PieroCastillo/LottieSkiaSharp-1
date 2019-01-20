@@ -2,14 +2,13 @@
 
 namespace LottieUWP
 {
-    public interface ILottieDrawable
+    public interface ILottieDrawable : ILottieInvalidatable
     {
-        void InvalidateSelf();
         bool UseTextGlyphs();
         Typeface GetTypeface(string fontFamily, string style);
         TextDelegate TextDelegate { get; }
         CanvasBitmap GetImageAsset(string id);
         LottieComposition Composition { get; }
-        bool EnableMergePathsForKitKatAndAbove();
+        bool EnableMergePaths();
     }
 }

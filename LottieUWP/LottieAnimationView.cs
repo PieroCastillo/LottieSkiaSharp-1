@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using Microsoft.Graphics.Canvas;
 using LottieUWP.Model;
 using LottieUWP.Value;
+using LottieUWP.Utils;
 
 namespace LottieUWP
 {
@@ -36,7 +37,7 @@ namespace LottieUWP
     /// <seealso cref="LottieAnimationView.Progress"/>
     /// </para>
     /// </summary>
-    public class LottieAnimationView : UserControl, IDisposable
+    public class LottieAnimationView : UserControl, IDisposable, ILottieInvalidatable
     {
         private new static readonly string Tag = typeof(LottieAnimationView).Name;
 
@@ -250,7 +251,7 @@ namespace LottieUWP
             }
             _lottieDrawable.RepeatCount = RepeatCount;
 
-            EnableMergePathsForKitKatAndAbove(false);
+            EnableMergePaths(false);
 
             SimpleColorFilter filter = new SimpleColorFilter(ColorFilter);
             KeyPath keyPath = new KeyPath("**");
@@ -379,24 +380,24 @@ namespace LottieUWP
         }
 
         /// <summary>
-        /// Enable this to get merge path support for devices running KitKat (19) and above.
+        /// Enable this to get merge path support.
         /// 
         /// Merge paths currently don't work if the the operand shape is entirely contained within the
         /// first shape. If you need to cut out one shape from another shape, use an even-odd fill type
         /// instead of using merge paths.
         /// </summary>
-        public void EnableMergePathsForKitKatAndAbove(bool enable)
+        public void EnableMergePaths(bool enable)
         {
-            _lottieDrawable.EnableMergePathsForKitKatAndAbove(enable);
+            _lottieDrawable.EnableMergePaths(enable);
         }
 
         /// <summary>
-        /// Returns whether merge paths are enabled for KitKat and above.
+        /// Returns whether merge paths are enabled.
         /// </summary>
         /// <returns></returns>
-        public bool IsMergePathsEnabledForKitKatAndAbove()
+        public bool IsMergePathsEnabled()
         {
-            return _lottieDrawable.IsMergePathsEnabledForKitKatAndAbove();
+            return _lottieDrawable.IsMergePathsEnabled();
         }
 
         public void UseExperimentalHardwareAcceleration(bool use = true)
@@ -438,8 +439,8 @@ namespace LottieUWP
         public async Task SetAnimationAsync(string assetName)
         {
             _animationName = assetName;
-            _compositionTaskCTS = new CancellationTokenSource();
-            await SetCompositionTaskAsync(LottieCompositionFactory.FromAsset(_lottieDrawable?.Device, assetName, _compositionTaskCTS.Token));
+            var compositionTaskCTS = new CancellationTokenSource();
+            await SetCompositionTaskAsync(LottieCompositionFactory.FromAsset(_lottieDrawable?.Device, assetName, compositionTaskCTS.Token), compositionTaskCTS);
         }
 
         /// <summary>
@@ -463,8 +464,8 @@ namespace LottieUWP
         /// </summary>
         public async Task SetAnimationAsync(JsonReader reader, string cacheKey)
         {
-            _compositionTaskCTS = new CancellationTokenSource();
-            await SetCompositionTaskAsync(LottieCompositionFactory.FromJsonReader(reader, cacheKey, _compositionTaskCTS.Token));
+            var compositionTaskCTS = new CancellationTokenSource();
+            await SetCompositionTaskAsync(LottieCompositionFactory.FromJsonReader(reader, cacheKey, compositionTaskCTS.Token), compositionTaskCTS);
         }
 
         /// <summary>
@@ -478,23 +479,24 @@ namespace LottieUWP
         /// <returns></returns>
         public async Task SetAnimationFromUrlAsync(string url)
         {
-            _compositionTaskCTS = new CancellationTokenSource();
-            await SetCompositionTaskAsync(LottieCompositionFactory.FromUrlAsync(Device, url, _compositionTaskCTS.Token));
+            var compositionTaskCTS = new CancellationTokenSource();
+            await SetCompositionTaskAsync(LottieCompositionFactory.FromUrlAsync(Device, url, compositionTaskCTS.Token), compositionTaskCTS);
         }
 
-        private async Task SetCompositionTaskAsync(Task<LottieResult<LottieComposition>> compositionTask)
+        private async Task SetCompositionTaskAsync(Task<LottieResult<LottieComposition>> compositionTask, CancellationTokenSource cancellationTokenSource)
         {
             ClearComposition();
             CancelLoaderTask();
+            _compositionTaskCTS = cancellationTokenSource;
 
             try
             {
                 var compositionResult = await compositionTask;
+                _compositionTaskCTS = null;
                 if (compositionResult.Value != null)
                 {
                     Composition = compositionResult.Value;
                 }
-                _compositionTaskCTS = null;
             }
             catch (TaskCanceledException e)
             {
@@ -738,13 +740,13 @@ namespace LottieUWP
         private static void LoopPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
             if (dependencyObject is LottieAnimationView lottieAnimationView && (bool)e.NewValue)
-                lottieAnimationView._lottieDrawable.RepeatCount = LottieDrawable.Infinite;
+                lottieAnimationView._lottieDrawable.RepeatCount = LottieValueAnimator.Infinite;
         }
 
         /// <summary>
         /// Defines what this animation should do when it reaches the end. This 
         /// setting is applied only when the repeat count is either greater than 
-        /// 0 or <see cref="LottieUWP.RepeatMode.Infinite"/>. Defaults to <see cref="LottieUWP.RepeatMode.Restart"/>.
+        /// 0 or <see cref="LottieValueAnimator.Infinite"/>. Defaults to <see cref="LottieUWP.RepeatMode.Restart"/>.
         /// Return either one of <see cref="LottieUWP.RepeatMode.Reverse"/> or <see cref="LottieUWP.RepeatMode.Restart"/>
         /// </summary>
         public RepeatMode RepeatMode
@@ -766,12 +768,12 @@ namespace LottieUWP
         /// <summary>
         /// Sets how many times the animation should be repeated. If the repeat 
         /// count is 0, the animation is never repeated. If the repeat count is 
-        /// greater than 0 or <see cref="LottieUWP.RepeatMode.Infinite"/>, the repeat mode will be taken 
+        /// greater than 0 or <see cref="LottieValueAnimator.Infinite"/>, the repeat mode will be taken 
         /// into account. The repeat count is 0 by default. 
         /// 
         /// Count the number of times the animation should be repeated
         /// 
-        /// Return the number of times the animation should repeat, or <see cref="LottieUWP.RepeatMode.Infinite"/>
+        /// Return the number of times the animation should repeat, or <see cref="LottieValueAnimator.Infinite"/>
         /// </summary>
         public int RepeatCount
         {
@@ -781,7 +783,7 @@ namespace LottieUWP
 
         // Using a DependencyProperty as the backing store for RepeatCount.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RepeatCountProperty =
-            DependencyProperty.Register("RepeatCount", typeof(int), typeof(LottieAnimationView), new PropertyMetadata(LottieDrawable.Infinite, RepeatCountPropertyChangedCallback));
+            DependencyProperty.Register("RepeatCount", typeof(int), typeof(LottieAnimationView), new PropertyMetadata(LottieValueAnimator.Infinite, RepeatCountPropertyChangedCallback));
 
         private static void RepeatCountPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
@@ -908,6 +910,11 @@ namespace LottieUWP
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new FrameworkElementAutomationPeer(this);
+        }
+
+        public void InvalidateSelf()
+        {
+            InvalidateArrange();
         }
 
         //private class SavedState : BaseSavedState

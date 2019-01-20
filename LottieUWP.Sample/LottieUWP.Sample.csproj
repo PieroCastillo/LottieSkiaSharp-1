@@ -394,6 +394,7 @@
     <Content Include="Assets\heart.json" />
     <Content Include="Assets\Fail.json" />
     <Content Include="Assets\hired.json" />
+    <Content Include="Assets\Tests\hd.json" />
     <None Include="LottieUWP.Sample_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -423,7 +424,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.1.7</Version>
+      <Version>6.2.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
