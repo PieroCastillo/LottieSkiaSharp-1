@@ -58,20 +58,22 @@ namespace LottieUWP.Animation.Content
         private readonly SKPath _path = new SKPath();
         private SKRect _rect;
 
+        private readonly bool _hidden;
         private readonly List<IContent> _contents;
         private List<IPathContent> _pathContents;
         private readonly TransformKeyframeAnimation _transformAnimation;
 
         internal ContentGroup(ILottieDrawable lottieDrawable, BaseLayer layer, ShapeGroup shapeGroup)
             : this(lottieDrawable, layer, shapeGroup.Name,
-                ContentsFromModels(lottieDrawable, layer, shapeGroup.Items),
+                shapeGroup.IsHidden, ContentsFromModels(lottieDrawable, layer, shapeGroup.Items),
                 FindTransform(shapeGroup.Items))
         {
         }
 
-        internal ContentGroup(ILottieDrawable lottieDrawable, BaseLayer layer, string name, List<IContent> contents, AnimatableTransform transform)
+        internal ContentGroup(ILottieDrawable lottieDrawable, BaseLayer layer, string name, bool hidden, List<IContent> contents, AnimatableTransform transform)
         {
             Name = name;
+            _hidden = hidden;
             _contents = contents;
 
             if (transform != null)
@@ -160,6 +162,10 @@ namespace LottieUWP.Animation.Content
                     _matrix.Set(_transformAnimation.Matrix);
                 }
                 _path.Reset();
+                if (_hidden)
+                {
+                    return _path;
+                }
                 for (var i = _contents.Count - 1; i >= 0; i--)
                 {
                     if (_contents[i] is IPathContent pathContent)
@@ -174,6 +180,10 @@ namespace LottieUWP.Animation.Content
 
         public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
+            if (_hidden)
+            {
+                return;
+            }
             _matrix.Set(parentMatrix);
             byte alpha;
             if (_transformAnimation != null)

@@ -19,23 +19,25 @@ namespace LottieUWP.Model.Content
 {
     public class ShapePath : IContentModel
     {
-        private readonly string _name;
         private readonly int _index;
         private readonly AnimatableShapeValue _shapePath;
 
-        public ShapePath(string name, int index, AnimatableShapeValue shapePath)
+        public ShapePath(string name, int index, AnimatableShapeValue shapePath, bool hidden)
         {
-            _name = name;
+            Name = name;
             _index = index;
             _shapePath = shapePath;
+            IdHidden = hidden;
         }
 
-        public string Name => _name;
+        public string Name { get; }
 
         internal AnimatableShapeValue GetShapePath()
         {
             return _shapePath;
         }
+
+        public bool IdHidden { get; }
 
         public IContent ToContent(ILottieDrawable drawable, BaseLayer layer)
         {
@@ -44,7 +46,7 @@ namespace LottieUWP.Model.Content
 
         public override string ToString()
         {
-            return "ShapePath{" + "name=" + _name + ", index=" + _index + '}';
+            return "ShapePath{" + "name=" + Name + ", index=" + _index + '}';
         }
     }
 }

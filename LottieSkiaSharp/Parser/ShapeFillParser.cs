@@ -27,6 +27,7 @@ namespace LottieUWP.Parser
             AnimatableIntegerValue opacity = null;
             string name = null;
             int fillTypeInt = 1;
+            bool hidden = false;
 
             while (reader.HasNext())
             {
@@ -47,6 +48,9 @@ namespace LottieUWP.Parser
                     case "r":
                         fillTypeInt = reader.NextInt();
                         break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
+                        break;
                     default:
                         reader.SkipValue();
                         break;
@@ -54,7 +58,7 @@ namespace LottieUWP.Parser
             }
 
             var fillType = fillTypeInt == 1 ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
-            return new ShapeFill(name, fillEnabled, fillType, color, opacity);
+            return new ShapeFill(name, fillEnabled, fillType, color, opacity, hidden);
         }
     }
 }

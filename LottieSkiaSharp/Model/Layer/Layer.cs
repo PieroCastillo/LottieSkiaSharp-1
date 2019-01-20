@@ -42,15 +42,13 @@ namespace LottieUWP.Model.Layer
             Unknown
         }
 
-        private readonly List<IContentModel> _shapes;
-        private readonly LottieComposition _composition;
         private readonly LayerType _layerType;
         private readonly MatteType _matteType;
 
-        public Layer(List<IContentModel> shapes, LottieComposition composition, string layerName, long layerId, LayerType layerType, long parentId, string refId, List<Mask> masks, AnimatableTransform transform, int solidWidth, int solidHeight, SKColor solidColor, float timeStretch, float startFrame, int preCompWidth, int preCompHeight, AnimatableTextFrame text, AnimatableTextProperties textProperties, List<Keyframe<float?>> inOutKeyframes, MatteType matteType, AnimatableFloatValue timeRemapping)
+        public Layer(List<IContentModel> shapes, LottieComposition composition, string layerName, long layerId, LayerType layerType, long parentId, string refId, List<Mask> masks, AnimatableTransform transform, int solidWidth, int solidHeight, SKColor solidColor, float timeStretch, float startFrame, int preCompWidth, int preCompHeight, AnimatableTextFrame text, AnimatableTextProperties textProperties, List<Keyframe<float?>> inOutKeyframes, MatteType matteType, AnimatableFloatValue timeRemapping, bool hidden)
         {
-            _shapes = shapes;
-            _composition = composition;
+            Shapes = shapes;
+            Composition = composition;
             Name = layerName;
             Id = layerId;
             _layerType = layerType;
@@ -70,15 +68,16 @@ namespace LottieUWP.Model.Layer
             InOutKeyframes = inOutKeyframes;
             _matteType = matteType;
             TimeRemapping = timeRemapping;
+            IsHidden = hidden;
         }
 
-        internal LottieComposition Composition => _composition;
+        internal LottieComposition Composition { get; }
 
         internal float TimeStretch { get; }
 
         internal float StartFrame { get; }
 
-        internal float StartProgress => StartFrame / _composition.DurationFrames;
+        internal float StartProgress => StartFrame / Composition.DurationFrames;
 
         internal List<Keyframe<float?>> InOutKeyframes { get; }
 
@@ -112,7 +111,7 @@ namespace LottieUWP.Model.Layer
 
         internal long ParentId { get; }
 
-        internal List<IContentModel> Shapes => _shapes;
+        internal List<IContentModel> Shapes { get; }
 
         internal AnimatableTransform Transform { get; }
 
@@ -121,6 +120,8 @@ namespace LottieUWP.Model.Layer
         internal int SolidHeight { get; }
 
         internal int SolidWidth { get; }
+
+        internal bool IsHidden { get; }
 
         public override string ToString()
         {
@@ -131,15 +132,15 @@ namespace LottieUWP.Model.Layer
         {
             var sb = new StringBuilder();
             sb.Append(prefix).Append(Name).Append("\n");
-            var parent = _composition.LayerModelForId(ParentId);
+            var parent = Composition.LayerModelForId(ParentId);
             if (parent != null)
             {
                 sb.Append("\t\tParents: ").Append(parent.Name);
-                parent = _composition.LayerModelForId(parent.ParentId);
+                parent = Composition.LayerModelForId(parent.ParentId);
                 while (parent != null)
                 {
                     sb.Append("->").Append(parent.Name);
-                    parent = _composition.LayerModelForId(parent.ParentId);
+                    parent = Composition.LayerModelForId(parent.ParentId);
                 }
                 sb.Append(prefix).Append("\n");
             }
@@ -151,10 +152,10 @@ namespace LottieUWP.Model.Layer
             {
                 sb.Append(prefix).Append("\tBackground: ").Append(string.Format(CultureInfo.InvariantCulture, "{0}x{1} {2}\n", SolidWidth, SolidHeight, SolidColor));
             }
-            if (_shapes.Count > 0)
+            if (Shapes.Count > 0)
             {
                 sb.Append(prefix).Append("\tShapes:\n");
-                foreach (var shape in _shapes)
+                foreach (var shape in Shapes)
                 {
                     sb.Append(prefix).Append("\t\t").Append(shape).Append("\n");
                 }

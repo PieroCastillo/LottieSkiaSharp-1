@@ -25,6 +25,7 @@ namespace LottieUWP.Parser
             IAnimatableValue<Vector2?, Vector2?> position = null;
             AnimatablePointValue size = null;
             bool reversed = d == 3;
+            bool hidden = false;
 
             while (reader.HasNext())
             {
@@ -39,6 +40,9 @@ namespace LottieUWP.Parser
                     case "s":
                         size = AnimatableValueParser.ParsePoint(reader, composition);
                         break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
+                        break;
                     case "d":
                         // "d" is 2 for normal and 3 for reversed. 
                         reversed = reader.NextInt() == 3;
@@ -49,7 +53,7 @@ namespace LottieUWP.Parser
                 }
             }
 
-            return new CircleShape(name, position, size, reversed);
+            return new CircleShape(name, position, size, reversed, hidden);
         }
     }
 }

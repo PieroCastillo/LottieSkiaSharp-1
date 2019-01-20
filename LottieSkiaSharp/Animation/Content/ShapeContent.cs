@@ -24,6 +24,7 @@ namespace LottieUWP.Animation.Content
     {
         private SKPath _path = new SKPath();
 
+        private readonly bool _hidden;
         private readonly ILottieDrawable _lottieDrawable;
         private readonly IBaseKeyframeAnimation<ShapeData, SKPath> _shapeAnimation;
 
@@ -33,6 +34,7 @@ namespace LottieUWP.Animation.Content
         internal ShapeContent(ILottieDrawable lottieDrawable, BaseLayer layer, ShapePath shape)
         {
             Name = shape.Name;
+            _hidden = shape.IdHidden;
             _lottieDrawable = lottieDrawable;
             _shapeAnimation = shape.GetShapePath().CreateAnimation();
             layer.AddAnimation(_shapeAnimation);
@@ -74,7 +76,13 @@ namespace LottieUWP.Animation.Content
 
                 _path.Reset();
 
-                _path=_shapeAnimation.Value;
+                if (_hidden)
+                {
+                    _isPathValid = true;
+                    return _path;
+                }
+
+                _path = _shapeAnimation.Value;
                 _path.FillType = SKPathFillType.EvenOdd;
 
                 Utils.Utils.ApplyTrimPathIfNeeded(ref _path, _trimPath);

@@ -20,7 +20,7 @@ namespace LottieUWP.Model.Content
 {
     public class GradientStroke : IContentModel
     {
-        public GradientStroke(string name, GradientType gradientType, AnimatableGradientColorValue gradientColor, AnimatableIntegerValue opacity, AnimatablePointValue startPoint, AnimatablePointValue endPoint, AnimatableFloatValue width, ShapeStroke.LineCapType capType, ShapeStroke.LineJoinType joinType, float miterLimit, List<AnimatableFloatValue> lineDashPattern, AnimatableFloatValue dashOffset)
+        public GradientStroke(string name, GradientType gradientType, AnimatableGradientColorValue gradientColor, AnimatableIntegerValue opacity, AnimatablePointValue startPoint, AnimatablePointValue endPoint, AnimatableFloatValue width, ShapeStroke.LineCapType capType, ShapeStroke.LineJoinType joinType, float miterLimit, List<AnimatableFloatValue> lineDashPattern, AnimatableFloatValue dashOffset, bool hidden)
         {
             Name = name;
             GradientType = gradientType;
@@ -34,6 +34,7 @@ namespace LottieUWP.Model.Content
             MiterLimit = miterLimit;
             LineDashPattern = lineDashPattern;
             DashOffset = dashOffset;
+            IsHidden = hidden;
         }
 
         internal string Name { get; }
@@ -55,6 +56,8 @@ namespace LottieUWP.Model.Content
         internal ShapeStroke.LineJoinType JoinType { get; }
 
         internal float MiterLimit { get; }
+
+        internal bool IsHidden { get; }
 
         internal List<AnimatableFloatValue> LineDashPattern { get; }
 

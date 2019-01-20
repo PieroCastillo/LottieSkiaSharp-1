@@ -30,6 +30,9 @@ namespace LottieUWP.Parser
                     case "nm":
                         name = reader.NextString();
                         break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
+                        break;
                     case "it":
                         reader.BeginArray();
                         while (reader.HasNext())
@@ -48,7 +51,7 @@ namespace LottieUWP.Parser
                 }
             }
 
-            return new ShapeGroup(name, items);
+            return new ShapeGroup(name, items, hidden);
         }
     }
 }

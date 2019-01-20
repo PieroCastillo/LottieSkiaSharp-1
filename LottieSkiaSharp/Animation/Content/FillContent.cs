@@ -28,6 +28,7 @@ namespace LottieUWP.Animation.Content
         private readonly SKPath _path = new SKPath();
         private readonly SKPaint _paint = SkRectExpansion.CreateSkPaint();
         private readonly BaseLayer _layer;
+        private readonly bool _hidden;
         private readonly List<IPathContent> _paths = new List<IPathContent>();
         private readonly IBaseKeyframeAnimation<SKColor?, SKColor?> _colorAnimation;
         private readonly IBaseKeyframeAnimation<int?, int?> _opacityAnimation;
@@ -38,6 +39,7 @@ namespace LottieUWP.Animation.Content
         {
             _layer = layer;
             Name = fill.Name;
+            _hidden = fill.IsHidden;
             _lottieDrawable = lottieDrawable;
             if (fill.Color == null || fill.Opacity == null)
             {
@@ -77,6 +79,10 @@ namespace LottieUWP.Animation.Content
         public string Name { get; }
         public void Draw(SKCanvas canvas, Matrix3X3 parentMatrix, byte parentAlpha)
         {
+            if (_hidden)
+            {
+                return;
+            }
             LottieLog.BeginSection("FillContent.Draw");
             _paint.Color = _colorAnimation.Value ?? SKColors.White;
             var alpha = (byte)(parentAlpha / 255f * _opacityAnimation.Value / 100f * 255);

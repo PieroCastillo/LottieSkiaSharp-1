@@ -22,7 +22,7 @@ namespace LottieUWP.Model.Content
     {
         public GradientFill(string name, GradientType gradientType, SKPathFillType fillType,
             AnimatableGradientColorValue gradientColor, AnimatableIntegerValue opacity, AnimatablePointValue startPoint,
-            AnimatablePointValue endPoint, AnimatableFloatValue highlightLength, AnimatableFloatValue highlightAngle)
+            AnimatablePointValue endPoint, AnimatableFloatValue highlightLength, AnimatableFloatValue highlightAngle, bool hidden)
         {
             GradientType = gradientType;
             FillType = fillType;
@@ -33,6 +33,7 @@ namespace LottieUWP.Model.Content
             Name = name;
             HighlightLength = highlightLength;
             HighlightAngle = highlightAngle;
+            IsHidden = hidden;
         }
 
         internal string Name { get; }
@@ -52,6 +53,8 @@ namespace LottieUWP.Model.Content
         internal AnimatableFloatValue HighlightLength { get; }
 
         internal AnimatableFloatValue HighlightAngle { get; }
+
+        internal bool IsHidden { get; }
 
         public IContent ToContent(ILottieDrawable drawable, BaseLayer layer)
         {

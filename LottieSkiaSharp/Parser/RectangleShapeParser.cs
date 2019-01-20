@@ -25,6 +25,7 @@ namespace LottieUWP.Parser
             IAnimatableValue<Vector2?, Vector2?> position = null;
             AnimatablePointValue size = null;
             AnimatableFloatValue roundedness = null;
+            bool hidden = false;
 
             while (reader.HasNext())
             {
@@ -42,13 +43,16 @@ namespace LottieUWP.Parser
                     case "r":
                         roundedness = AnimatableValueParser.ParseFloat(reader, composition);
                         break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
+                        break;
                     default:
                         reader.SkipValue();
                         break;
                 }
             }
 
-            return new RectangleShape(name, position, size, roundedness);
+            return new RectangleShape(name, position, size, roundedness, hidden);
         }
     }
 }

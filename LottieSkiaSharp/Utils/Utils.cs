@@ -84,7 +84,7 @@ namespace LottieUWP.Utils
 
         internal static void ApplyTrimPathIfNeeded(ref SKPath path, TrimPathContent trimPath)
         {
-            if (trimPath == null)
+            if (trimPath == null || trimPath.IsHidden)
             {
                 return;
             }

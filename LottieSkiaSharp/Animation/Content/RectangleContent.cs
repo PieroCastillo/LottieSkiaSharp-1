@@ -30,6 +30,7 @@ namespace LottieUWP.Animation.Content
         private SKPath _path = new SKPath();
         private SKRect _rect;
 
+        private readonly bool _hidden;
         private readonly ILottieDrawable _lottieDrawable;
         private readonly IBaseKeyframeAnimation<Vector2?, Vector2?> _positionAnimation;
         private readonly IBaseKeyframeAnimation<Vector2?, Vector2?> _sizeAnimation;
@@ -42,6 +43,7 @@ namespace LottieUWP.Animation.Content
         {
             Name = rectShape.Name;
             _lottieDrawable = lottieDrawable;
+            _hidden = rectShape.IsHidden;
             _positionAnimation = rectShape.Position.CreateAnimation();
             _sizeAnimation = rectShape.Size.CreateAnimation();
             _cornerRadiusAnimation = rectShape.CornerRadius.CreateAnimation();
@@ -90,6 +92,12 @@ namespace LottieUWP.Animation.Content
                 }
 
                 _path.Reset();
+
+                if (_hidden)
+                {
+                    _isPathValid = true;
+                    return _path;
+                }
 
                 var size = _sizeAnimation.Value;
                 var halfWidth = size.Value.X / 2f;

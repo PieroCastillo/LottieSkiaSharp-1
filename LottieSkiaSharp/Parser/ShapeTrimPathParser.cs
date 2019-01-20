@@ -25,6 +25,7 @@ namespace LottieUWP.Parser
             AnimatableFloatValue start = null;
             AnimatableFloatValue end = null;
             AnimatableFloatValue offset = null;
+            bool hidden = false;
 
             while (reader.HasNext())
             {
@@ -32,6 +33,9 @@ namespace LottieUWP.Parser
                 {
                     case "s":
                         start = AnimatableValueParser.ParseFloat(reader, composition, false);
+                        break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
                         break;
                     case "e":
                         end = AnimatableValueParser.ParseFloat(reader, composition, false);
@@ -51,7 +55,7 @@ namespace LottieUWP.Parser
                 }
             }
 
-            return new ShapeTrimPath(name, type, start, end, offset);
+            return new ShapeTrimPath(name, type, start, end, offset, hidden);
         }
     }
 }

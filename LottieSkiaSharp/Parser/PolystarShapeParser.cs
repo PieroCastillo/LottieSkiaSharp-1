@@ -30,6 +30,7 @@ namespace LottieUWP.Parser
             AnimatableFloatValue outerRoundedness = null;
             AnimatableFloatValue innerRadius = null;
             AnimatableFloatValue innerRoundedness = null;
+            bool hidden = false;
 
             while (reader.HasNext())
             {
@@ -62,13 +63,16 @@ namespace LottieUWP.Parser
                     case "is":
                         innerRoundedness = AnimatableValueParser.ParseFloat(reader, composition, false);
                         break;
+                    case "hd":
+                        hidden = reader.NextBoolean();
+                        break;
                     default:
                         reader.SkipValue();
                         break;
                 }
             }
 
-            return new PolystarShape(name, type, points, position, rotation, innerRadius, outerRadius, innerRoundedness, outerRoundedness);
+            return new PolystarShape(name, type, points, position, rotation, innerRadius, outerRadius, innerRoundedness, outerRoundedness, hidden);
         }
     }
 }
