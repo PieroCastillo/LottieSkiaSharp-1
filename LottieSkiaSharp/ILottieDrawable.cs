@@ -23,6 +23,6 @@ namespace LottieUWP
         TextDelegate TextDelegate { get; }
         SKBitmap GetImageAsset(string id);
         LottieComposition Composition { get; }
-        bool EnableMergePathsForKitKatAndAbove();
+        bool EnableMergePaths();
     }
 }

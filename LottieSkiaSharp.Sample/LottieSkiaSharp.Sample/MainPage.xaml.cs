@@ -21,6 +21,7 @@ namespace LottieSkiaSharp.Sample
             v.FileName = (await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync("Assets\\lottiefiles.com - ATM.json")).Path;
 #endif
             v.UseHardwareAcceleration(false);
+            v.EnableMergePaths(true);
             
             //v.UseExperimentalHardwareAcceleration()
             v.PlayAnimation();

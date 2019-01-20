@@ -255,7 +255,7 @@ namespace LottieUWP
             }
             _lottieDrawable.RepeatCount = RepeatCount;
 
-            EnableMergePathsForKitKatAndAbove(false);
+            EnableMergePaths(false);
             var filter = SKColorFilter.CreateBlendMode(SkiaSharp.Views.Forms.Extensions.ToSKColor(ColorFilter), SKBlendMode.Color);
             KeyPath keyPath = new KeyPath("**");
             var callback = new LottieValueCallback<SKColorFilter>(filter);
@@ -390,18 +390,18 @@ namespace LottieUWP
         /// first shape. If you need to cut out one shape from another shape, use an even-odd fill type
         /// instead of using merge paths.
         /// </summary>
-        public void EnableMergePathsForKitKatAndAbove(bool enable)
+        public void EnableMergePaths(bool enable)
         {
-            _lottieDrawable.EnableMergePathsForKitKatAndAbove(enable);
+            _lottieDrawable.EnableMergePaths(enable);
         }
 
         /// <summary>
         /// Returns whether merge paths are enabled for KitKat and above.
         /// </summary>
         /// <returns></returns>
-        public bool IsMergePathsEnabledForKitKatAndAbove()
+        public bool IsMergePathsEnabled()
         {
-            return _lottieDrawable.IsMergePathsEnabledForKitKatAndAbove();
+            return _lottieDrawable.IsMergePathsEnabled();
         }
 
         public void UseExperimentalHardwareAcceleration(bool use = true)
