@@ -496,7 +496,7 @@ namespace LottieUWP
 
         public float[] Approximate(float precision)
         {
-            var pathIteratorFactory = new CachedPathIteratorFactory(new FullPathIterator(this));
+            var pathIteratorFactory = new PathInterpolator.CachedPathIteratorFactory(new PathInterpolator.FullPathIterator(this));
             var pathIterator = pathIteratorFactory.Iterator();
             float[] points = new float[8];
             var segmentPoints = new List<Vector2>();

@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
-    <LangVersion>7.1</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>yinyue200.com</Authors>
     <Company />
     <PackageLicenseUrl>https://github.com/yinyue200/LottieSkiaSharp/blob/master/LICENSE</PackageLicenseUrl>
@@ -14,14 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Path.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.168" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="SkiaSharp.Views.Forms" Version="1.60.3" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="*" />
+    <PackageReference Include="Newtonsoft.Json" Version="*" />
+    <PackageReference Include="Avalonia" Version="*" />
+    <PackageReference Include="SkiaSharp" Version="*" />
   </ItemGroup>
 
 </Project>

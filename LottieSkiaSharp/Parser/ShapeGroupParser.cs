@@ -21,6 +21,7 @@ namespace LottieUWP.Parser
         internal static ShapeGroup Parse(JsonReader reader, LottieComposition composition)
         {
             string name = null;
+            bool hidden = false;
             List<IContentModel> items = new List<IContentModel>();
 
             while (reader.HasNext())

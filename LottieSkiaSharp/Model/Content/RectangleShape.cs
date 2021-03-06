@@ -20,7 +20,7 @@ namespace LottieUWP.Model.Content
 {
     public class RectangleShape : IContentModel
     {
-        public RectangleShape(string name, IAnimatableValue<Vector2?, Vector2?> position, AnimatablePointValue size, AnimatableFloatValue cornerRadius)
+        public RectangleShape(string name, IAnimatableValue<Vector2?, Vector2?> position, AnimatablePointValue size, AnimatableFloatValue cornerRadius, bool hidden)
         {
             Name = name;
             Position = position;
