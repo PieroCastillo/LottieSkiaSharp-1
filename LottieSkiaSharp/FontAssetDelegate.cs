@@ -18,7 +18,7 @@ namespace LottieUWP
     /// Delegate to handle the loading of fonts that are not packaged in the assets of your app or don't
     /// have the same file name.
     /// </summary>
-    /// <seealso cref="LottieDrawable.FontAssetDelegate"></seealso>
+    /// <seealso cref="FontAssetDelegate"></seealso>
     public class FontAssetDelegate
     {
         /// <summary>

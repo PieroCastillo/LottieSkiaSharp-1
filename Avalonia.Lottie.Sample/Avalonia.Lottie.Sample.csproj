@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Folder Include="Controls" />
+        <Folder Include="Models\" />
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="0.10.0" />
+        <PackageReference Include="Avalonia.Controls.PanAndZoom" Version="3.0.0" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
+        <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\LottieSkiaSharp\LottieSkiaSharp.csproj" />
+    </ItemGroup>
+</Project>

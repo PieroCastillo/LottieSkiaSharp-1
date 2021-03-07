@@ -24,7 +24,7 @@ namespace LottieUWP
     public class TextDelegate
     {
         private readonly Dictionary<string, string> _stringMap = new Dictionary<string, string>();
-        private readonly LottieAnimationView _animationView;
+        // private readonly LottieAnimationView _animationView;
         private readonly ILottieDrawable _drawable;
         private bool _cacheText = true;
 
@@ -33,20 +33,20 @@ namespace LottieUWP
         /// </summary>
         internal TextDelegate()
         {
-            _animationView = null;
+            // _animationView = null;
             _drawable = null;
         }
 
-        public TextDelegate(LottieAnimationView animationView)
-        {
-            _animationView = animationView;
-            _drawable = null;
-        }
+        // public TextDelegate(LottieAnimationView animationView)
+        // {
+        //     _animationView = animationView;
+        //     _drawable = null;
+        // }
 
         public TextDelegate(ILottieDrawable drawable)
         {
             _drawable = drawable;
-            _animationView = null;
+            // _animationView = null;
         }
 
         /// <summary>
