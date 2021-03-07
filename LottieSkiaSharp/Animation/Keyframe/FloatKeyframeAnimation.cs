@@ -24,9 +24,19 @@ namespace LottieUWP.Animation.Keyframe
 
         public override float? GetValue(Keyframe<float?> keyframe, float keyframeProgress)
         {
-            if (keyframe.StartValue == null || keyframe.EndValue == null)
+            var sv = 0f;
+            var ev = 0f;
+            if (keyframe.StartValue != null)
             {
-                throw new System.InvalidOperationException("Missing values for keyframe.");
+                sv = keyframe.StartValue.Value;
+                //throw new System.InvalidOperationException("Missing values for keyframe.");
+            }
+
+            if (keyframe.EndValue != null)
+            {
+                ev = keyframe.EndValue.Value;
+
+                //throw new System.InvalidOperationException("Missing values for keyframe.");
             }
 
             if (ValueCallback != null)
@@ -38,7 +48,7 @@ namespace LottieUWP.Animation.Keyframe
                 }
             }
 
-            return MathExt.Lerp(keyframe.StartValue.Value, keyframe.EndValue.Value, keyframeProgress);
+            return MathExt.Lerp(sv, ev, keyframeProgress);
         }
     }
 }
